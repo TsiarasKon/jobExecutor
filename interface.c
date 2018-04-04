@@ -5,9 +5,7 @@
 #include <ctype.h>
 #include "trie.h"
 #include "pairingheap.h"
-#include "util.h"
 
-extern int K;
 extern int doc_count;
 
 int interface(Trie *trie, char **docs, int *docWc) {
@@ -87,19 +85,19 @@ int interface(Trie *trie, char **docs, int *docWc) {
                         continue;
                     }
                     found = 1;
-                    doc_score += score(tf, tempPostingList->df, docWc[id]);
+                    //doc_score += score(tf, tempPostingList->df, docWc[id]);
                 }
                 if (found) {
                     heap = heapInsert(heap, doc_score, id);
                 }
             }
-            int exit_code = print_results(&heap, docs, terms);
+            //int exit_code = print_results(&heap, docs, terms);
             if (heap != NULL) {
                 destroyHeap(&heap);
             }
-            if (exit_code > 0) {      // failed to print results (due to an inability to allocate memory)
-                return exit_code;
-            }
+//            if (exit_code > 0) {      // failed to print results (due to an inability to allocate memory)
+//                return exit_code;
+//            }
         } else if (!strcmp(command, cmds[1])) {       // df
             command = strtok(NULL, " \t");
             if (command == NULL) {          // full df
@@ -137,21 +135,6 @@ int interface(Trie *trie, char **docs, int *docWc) {
             printf("%d %s %d\n", id, command, getTermFrequency(postingList, id));
         } else if (!strcmp(command, cmds[3])) {       // exit
             break;
-        } else if (!strcmp(command, cmds[4])) {       // k
-            command = strtok(NULL, " \t");
-            if (command == NULL || !isdigit(*command)) {
-                fprintf(stderr, "Invalid use of '/k': No K specified.\n");
-                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-                continue;
-            }
-            int newK = atoi(command);
-            if (newK < 1) {
-                fprintf(stderr, "Invalid use of '/k': K must be greater than 0.\n");
-                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-                continue;
-            }
-            K = newK;
-            printf("K successfully set to %d.\n", K);
         }else if (!strcmp(command, cmds[5])) {       // help
             printf("Available commands (use without quotes):\n");
             printf(" '/search word1 word2 ... word10' for a list of the top-K most relevant docs with the given words. Only up to 10 words per search query are currently supported. \n");

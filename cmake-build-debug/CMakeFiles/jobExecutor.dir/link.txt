@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/jobExecutor.dir/main.c.o CMakeFiles/jobExecutor.dir/interface.c.o CMakeFiles/jobExecutor.dir/trie.c.o CMakeFiles/jobExecutor.dir/postinglist.c.o CMakeFiles/jobExecutor.dir/pairingheap.c.o  -o jobExecutor 
