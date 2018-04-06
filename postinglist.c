@@ -97,7 +97,7 @@ int incrementPostingList(TrieNode *node, int id, char *filename, int line) {
     /* Words are inserted in order of id, so the posting list we're looking for either
      * is the last one or it doesn't exist and should be created after the last */
     if ((*PostingList)->last->id == id) {      // word belongs to last doc
-        (*PostingList)->last->lastline->next = createLineListNode(line);    // append a LineListNode 
+        (*PostingList)->last->lastline->next = createLineListNode(line);    // append a LineListNode
         if ((*PostingList)->last->lastline->next == NULL) {
             fprintf(stderr, "Failed to allocate memory.\n");
             return 4;
