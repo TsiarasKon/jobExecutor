@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
+#include <linux/limits.h>
 #include "trie.h"
 
 int interface(Trie *trie, char **docs, int *docWc);
@@ -14,31 +15,41 @@ int doc_count;
 int main(int argc, char *argv[]) {
     DIR* FD;
     struct dirent* in_file;
-    char *dir = "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/test";
+    //char *dir_name = "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/test";
+    char *dir_name = NULL;
     FILE *entry_file;
-    char buffer[256];
-    char full_name[512];
+    char full_name[PATH_MAX];
+    size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
+    char *buffer = NULL;
 
-    if ((FD = opendir (dir)) == NULL) {
-        fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
-
-        return 1;
-    }
-    while ((in_file = readdir(FD))) {
-        if (!strcmp (in_file->d_name, ".") || !strcmp (in_file->d_name, "..")) {
-            continue;
-        }
-        sprintf(full_name, "%s/%s", dir, in_file->d_name);
-        entry_file = fopen(full_name, "rw");
-        if (entry_file == NULL) {
-            fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
-
+    while (getline(&dir_name, &bufsize, stdin) != -1) {
+        strtok(dir_name, "\n");
+        if ((FD = opendir(dir_name)) == NULL) {
+            fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
             return 1;
         }
-        while (fgets(buffer, 256, entry_file) != NULL) {
-            printf("%s", buffer);
+        while ((in_file = readdir(FD))) {
+            if (!strcmp(in_file->d_name, ".") || !strcmp(in_file->d_name, "..")) {
+                continue;
+            }
+            sprintf(full_name, "%s/%s", dir_name, in_file->d_name);
+            entry_file = fopen(full_name, "rw");
+            if (entry_file == NULL) {
+                fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
+
+                return 1;
+            }
+            while (getline(&buffer, &bufsize, entry_file) != -1) {
+                printf("%s", buffer);
+            }
+            fclose(entry_file);
         }
-        fclose(entry_file);
+    }
+    if (buffer != NULL) {
+        free(buffer);
+    }
+    if (dir_name != NULL) {
+        free(dir_name);
     }
 
     return 0;

@@ -8,25 +8,36 @@
 typedef struct postinglist PostingList;
 typedef struct trienode TrieNode;
 #endif
-typedef struct listnode ListNode;
+typedef struct postinglistnode PostingListNode;
+typedef struct linelistnode LineListNode;
 
-struct listnode {
-    int id_times[2];
-    ListNode *next;
+struct linelistnode {
+    int line;
+    LineListNode *next;
+};
+
+struct postinglistnode {
+    int id;
+    char *filename;
+    LineListNode *firstline;
+    LineListNode *lastline;
+    int tf;
+    PostingListNode *next;
 };
 
 struct postinglist {
-    int df;
-    ListNode *first;
-    ListNode *last;
+    PostingListNode *first;
+    PostingListNode *last;
 };
 
-ListNode* createListNode(int id);
-void deleteListNode(ListNode **listNode);
+LineListNode* createLineListNode(int line);
+
+PostingListNode* createPostingListNode(int id, char *filename, int line);
+void deletePostingListNode(PostingListNode **listNode);
 PostingList* createPostingList();
 void deletePostingList(PostingList **postingList);
 
-int incrementPostingList(TrieNode *node, int id);
+int incrementPostingList(TrieNode *node, int id, char *filename, int line);
 int getTermFrequency(PostingList *postingList, int id);
 
 #endif

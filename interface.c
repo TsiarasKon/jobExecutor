@@ -10,13 +10,12 @@ extern int doc_count;
 
 int interface(Trie *trie, char **docs, int *docWc) {
     char *command;
-    char *cmds[6];
+    char *cmds[5];
     cmds[0] = "/search";
-    cmds[1] = "/df";
-    cmds[2] = "/tf";
-    cmds[3] = "/exit";
-    cmds[4] = "/k";
-    cmds[5] = "/help";
+    cmds[1] = "/maxcount";
+    cmds[2] = "/mincount";
+    cmds[3] = "/wc";
+    cmds[4] = "/exit";
     size_t bufsize = 32;      // sample size - getline will reallocate memory as needed
     char *buffer = malloc(bufsize);
     if (buffer == NULL) {
@@ -25,11 +24,11 @@ int interface(Trie *trie, char **docs, int *docWc) {
     }
     char *bufferptr;       // used to free buffer after using strtok
     while (1) {
-        // Until "\exit" is given, read current line and attempt to execute it as a command
+        // Until "/exit" is given, read current line and attempt to execute it as a command
         printf("Type a command:\n");
         getline(&buffer, &bufsize, stdin);
         bufferptr = buffer;
-        strtok(buffer, "\r\n");     // remove trailing newline character
+        strtok(buffer, "\n");     // remove trailing newline character
         command = strtok(buffer, " ");
         if (!strcmp(command, cmds[0]) || !strcmp(command, "/s")) {          // search
             command = strtok(NULL, " \t");
@@ -58,7 +57,7 @@ int interface(Trie *trie, char **docs, int *docWc) {
              * Else, if a match is found, we calculate the score() for this doc and term.
              * Each doc that contained a search term is then added to a pairing heap for later printing. */
             HeapNode *heap = NULL;
-            ListNode *postingListPtr[term_count];
+            PostingListNode *postingListPtr[term_count];
             PostingList *tempPostingList;
             for (int i = 0; i < term_count; i++) {
                 tempPostingList = getPostingList(trie, terms[i]);

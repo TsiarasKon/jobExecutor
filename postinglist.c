@@ -1,27 +1,58 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "postinglist.h"
 
-ListNode* createListNode(int id) {
-    ListNode *listNode = malloc(sizeof(ListNode));
+LineListNode* createLineListNode(int line) {
+    LineListNode *listNode = malloc(sizeof(LineListNode));
     if (listNode == NULL) {
         fprintf(stderr, "Failed to allocate memory.\n");
         return NULL;
     }
-    listNode->id_times[0] = id;
-    listNode->id_times[1] = 1;      // word exists 1 time in doc #id
+    listNode->line = line;
     listNode->next = NULL;
     return listNode;
 }
 
-void deleteListNode(ListNode **listNode) {
+PostingListNode* createPostingListNode(int id, char *filename, int line) {
+    PostingListNode *listNode = malloc(sizeof(PostingListNode));
+    if (listNode == NULL) {
+        fprintf(stderr, "Failed to allocate memory.\n");
+        return NULL;
+    }
+    listNode->id = id;
+    listNode->filename = malloc(sizeof(filename));
+    if (listNode->filename == NULL) {
+        fprintf(stderr, "Failed to allocate memory.\n");
+        return NULL;
+    }
+    strcpy(listNode->filename, filename);
+    listNode->firstline = createLineListNode(line);
+    if (listNode->firstline == NULL) {
+        fprintf(stderr, "Failed to allocate memory.\n");
+        return NULL;
+    }
+    listNode->lastline = listNode->firstline;
+    listNode->tf = 1;
+    return listNode;
+}
+
+void deletePostingListNode(PostingListNode **listNode) {
     if (*listNode == NULL) {
-        fprintf(stderr, "Attempted to delete a NULL ListNode.\n");
+        fprintf(stderr, "Attempted to delete a NULL PostingListNode.\n");
         return;
     }
-    ListNode *current = *listNode;
-    ListNode *next;
+    PostingListNode *current = *listNode;
+    PostingListNode *next;
+    LineListNode *currentlinenode, *nextlinenode;
     while (current != NULL) {
+        free(current->filename);
+        currentlinenode = current->firstline;
+        while (currentlinenode != NULL) {       // Also delete LineList
+            nextlinenode = currentlinenode->next;
+            free(currentlinenode);
+            currentlinenode = nextlinenode;
+        }
         next = current->next;
         free(current);
         current = next;
@@ -35,7 +66,6 @@ PostingList* createPostingList() {
         fprintf(stderr, "Failed to allocate memory.\n");
         return NULL;
     }
-    postingList->df = 0;
     postingList->first = postingList->last = NULL;
     return postingList;
 }
@@ -46,37 +76,41 @@ void deletePostingList(PostingList **postingList) {
         return;
     }
     if ((*postingList)->first != NULL) {
-        deleteListNode(&(*postingList)->first);     // delete the entire list
+        deletePostingListNode(&(*postingList)->first);     // delete the entire list
     }
     free(*postingList);
     *postingList = NULL;
 }
 
-int incrementPostingList(TrieNode *node, int id) {
+int incrementPostingList(TrieNode *node, int id, char *filename, int line) {
     PostingList **PostingList = &node->postingList;
     // If list is empty, create a listNode and set both first and last to point to it
     if ((*PostingList)->first == NULL) {
-        (*PostingList)->first = createListNode(id);
+        (*PostingList)->first = createPostingListNode(id, filename, line);
         if ((*PostingList)->first == NULL) {
             fprintf(stderr, "Failed to allocate memory.\n");
             return 4;
         }
         (*PostingList)->last = (*PostingList)->first;
-        (*PostingList)->df++;
         return 0;
     }
     /* Words are inserted in order of id, so the posting list we're looking for either
      * is the last one or it doesn't exist and should be created after the last */
-    if ((*PostingList)->last->id_times[0] == id) {      // word belongs to last doc
-        (*PostingList)->last->id_times[1]++;
+    if ((*PostingList)->last->id == id) {      // word belongs to last doc
+        (*PostingList)->last->lastline->next = createLineListNode(line);    // append a LineListNode 
+        if ((*PostingList)->last->lastline->next == NULL) {
+            fprintf(stderr, "Failed to allocate memory.\n");
+            return 4;
+        }
+        (*PostingList)->last->lastline = (*PostingList)->last->lastline->next;  // update pointer to lastline
+        (*PostingList)->last->tf++;
     } else {
-        (*PostingList)->last->next = createListNode(id);
+        (*PostingList)->last->next = createPostingListNode(id, filename, line);
         if ((*PostingList)->last->next == NULL) {
             fprintf(stderr, "Failed to allocate memory.\n");
             return 4;
         }
         (*PostingList)->last = (*PostingList)->last->next;
-        (*PostingList)->df++;       // new postlingList added - increment df by 1
     }
     return 0;
 }
@@ -85,11 +119,11 @@ int getTermFrequency(PostingList *postingList, int id) {        // returns 0 if 
     if (postingList == NULL) {
         return 0;
     }
-    ListNode *current = postingList->first;
+    PostingListNode *current = postingList->first;
     // If we surpass the id, then the postingList we're searching for doesn't exist:
-    while (current != NULL && current->id_times[0] <= id) {
-        if (current->id_times[0] == id) {
-            return current->id_times[1];
+    while (current != NULL && current->id <= id) {
+        if (current->id == id) {
+            return current->tf;
         }
         current = current->next;
     }
