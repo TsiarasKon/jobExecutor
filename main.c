@@ -36,7 +36,6 @@ int main(int argc, char *argv[]) {
             entry_file = fopen(full_name, "rw");
             if (entry_file == NULL) {
                 fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
-
                 return 1;
             }
             while (getline(&buffer, &bufsize, entry_file) != -1) {
