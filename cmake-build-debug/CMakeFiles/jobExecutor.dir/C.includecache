@@ -45,6 +45,8 @@ trie.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
 doc_struct.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/doc_struct.h
+util.h
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
 
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.c
 stdio.h
@@ -69,6 +71,8 @@ postinglist.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.h
 trie.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
+util.h
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
 
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.c
 stdio.h
@@ -83,4 +87,16 @@ trie.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
 postinglist.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.h
+
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+util.h
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
+
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
 

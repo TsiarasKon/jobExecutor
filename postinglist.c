@@ -3,17 +3,6 @@
 #include <string.h>
 #include "postinglist.h"
 
-LineListNode* createLineListNode(int line) {
-    LineListNode *listNode = malloc(sizeof(LineListNode));
-    if (listNode == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
-        return NULL;
-    }
-    listNode->line = line;
-    listNode->next = NULL;
-    return listNode;
-}
-
 PostingListNode* createPostingListNode(int id, char *filename, int line) {
     PostingListNode *listNode = malloc(sizeof(PostingListNode));
     if (listNode == NULL) {
@@ -27,7 +16,7 @@ PostingListNode* createPostingListNode(int id, char *filename, int line) {
         return NULL;
     }
     strcpy(listNode->filename, filename);
-    listNode->firstline = createLineListNode(line);
+    listNode->firstline = createIntListNode(line);
     if (listNode->firstline == NULL) {
         fprintf(stderr, "Failed to allocate memory.\n");
         return NULL;
@@ -44,7 +33,7 @@ void deletePostingListNode(PostingListNode **listNode) {
     }
     PostingListNode *current = *listNode;
     PostingListNode *next;
-    LineListNode *currentlinenode, *nextlinenode;
+    IntListNode *currentlinenode, *nextlinenode;
     while (current != NULL) {
         free(current->filename);
         currentlinenode = current->firstline;
@@ -97,7 +86,7 @@ int incrementPostingList(TrieNode *node, int id, char *filename, int line) {
     /* Words are inserted in order of id, so the posting list we're looking for either
      * is the last one or it doesn't exist and should be created after the last */
     if ((*PostingList)->last->id == id) {      // word belongs to last doc
-        (*PostingList)->last->lastline->next = createLineListNode(line);    // append a LineListNode
+        (*PostingList)->last->lastline->next = createIntListNode(line);    // append a IntListNode
         if ((*PostingList)->last->lastline->next == NULL) {
             fprintf(stderr, "Failed to allocate memory.\n");
             return 4;

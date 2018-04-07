@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include "trie.h"
 #include "doc_struct.h"
+#include "util.h"
 
 int interface(Trie *trie, char **docs, int *docWc);
 
@@ -32,9 +33,29 @@ int main(int argc, char *argv[]) {
     }
 
     char msgbuf[BUFSIZ];
+    StringListNode *dirs = NULL;
+    StringListNode *last_dir = NULL;
     while (read(fd0, msgbuf, BUFSIZ) > 0) {
-        printf("%s\n", msgbuf);
+        if (dirs == NULL) {     // only for first dir
+            dirs = createStringListNode(msgbuf);
+            if (dirs == NULL) {
+                fprintf(stderr, "Failed to allocate memory.\n");
+                return NULL;
+            }
+            last_dir = dirs;
+        } else {
+            last_dir->next = createStringListNode(msgbuf);
+            if (last_dir->next == NULL) {
+                fprintf(stderr, "Failed to allocate memory.\n");
+                return NULL;
+            }
+            last_dir = last_dir->next;
+        }
     }
+//    while (dirs != NULL) {
+//        printf("%s\n", dirs->string);
+//        dirs = dirs->next;
+//    }
     printf("It's over!");
     return 0;
 

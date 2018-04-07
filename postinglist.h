@@ -2,6 +2,7 @@
 #define POSTINGLIST_H
 
 #include "trie.h"
+#include "util.h"
 
 #ifndef TYPEDEFS     // needed forward declarations, avoiding redefinitions
 #define TYPEDEFS
@@ -9,18 +10,12 @@ typedef struct postinglist PostingList;
 typedef struct trienode TrieNode;
 #endif
 typedef struct postinglistnode PostingListNode;
-typedef struct linelistnode LineListNode;
-
-struct linelistnode {
-    int line;
-    LineListNode *next;
-};
 
 struct postinglistnode {
     int id;
     char *filename;
-    LineListNode *firstline;
-    LineListNode *lastline;
+    IntListNode *firstline;
+    IntListNode *lastline;
     int tf;
     PostingListNode *next;
 };
@@ -29,8 +24,6 @@ struct postinglist {
     PostingListNode *first;
     PostingListNode *last;
 };
-
-LineListNode* createLineListNode(int line);
 
 PostingListNode* createPostingListNode(int id, char *filename, int line);
 void deletePostingListNode(PostingListNode **listNode);
