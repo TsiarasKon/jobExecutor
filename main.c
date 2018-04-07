@@ -33,72 +33,147 @@ int main(int argc, char *argv[]) {
     }
 
     char msgbuf[BUFSIZ];
-    StringListNode *dirs = NULL;
-    StringListNode *last_dir = NULL;
+    StringListNode *dirnames = NULL;
+    StringListNode *last_dirname = NULL;
     while (read(fd0, msgbuf, BUFSIZ) > 0) {
-        if (dirs == NULL) {     // only for first dir
-            dirs = createStringListNode(msgbuf);
-            if (dirs == NULL) {
+        if (dirnames == NULL) {     // only for first dir
+            dirnames = createStringListNode(msgbuf);
+            if (dirnames == NULL) {
                 fprintf(stderr, "Failed to allocate memory.\n");
                 return NULL;
             }
-            last_dir = dirs;
+            last_dirname = dirnames;
         } else {
-            last_dir->next = createStringListNode(msgbuf);
-            if (last_dir->next == NULL) {
+            last_dirname->next = createStringListNode(msgbuf);
+            if (last_dirname->next == NULL) {
                 fprintf(stderr, "Failed to allocate memory.\n");
                 return NULL;
             }
-            last_dir = last_dir->next;
+            last_dirname = last_dirname->next;
         }
     }
-//    while (dirs != NULL) {
-//        printf("%s\n", dirs->string);
-//        dirs = dirs->next;
+//    while (dirnames != NULL) {
+//        printf("%s\n", dirnames->string);
+//        dirnames = dirnames->next;
 //    }
-    printf("It's over!");
-    return 0;
-
 
     DIR* FD;
-    struct dirent* in_file;
-    //char *dir_name = "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/test";
-    char *dir_name = NULL;
-    FILE *entry_file;
-    char *full_name;
-    size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
-    char *buffer = NULL;
-
-    while (getline(&dir_name, &bufsize, stdin) != -1) {
-        strtok(dir_name, "\n");
-        if ((FD = opendir(dir_name)) == NULL) {
+    struct dirent* curr_dirent;
+    doc_count = 0;
+    StringListNode *curr_dirname = dirnames;
+    char full_name[PATH_MAX];
+    while (curr_dirname != NULL) {
+        if ((FD = opendir(curr_dirname->string)) == NULL) {
             fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
             return 1;
         }
-        while ((in_file = readdir(FD))) {
-            if (!strcmp(in_file->d_name, ".") || !strcmp(in_file->d_name, "..")) {
+        while ((curr_dirent = readdir(FD))) {
+            if ((strcmp(curr_dirent->d_name, ".") != 0) && (strcmp(curr_dirent->d_name, "..") != 0)) {
+                doc_count++;
+            }
+        }
+        curr_dirname = curr_dirname->next;
+    }
+
+    char *docnames[doc_count];
+    int doclines[doc_count];
+    char **docs[doc_count];
+
+    FILE *fp;
+    curr_dirname = dirnames;
+    int curr_doc = 0;
+    int lines_num;
+    size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
+    char *buffer = NULL;
+    while (curr_dirname != NULL) {
+        if ((FD = opendir(curr_dirname->string)) == NULL) {
+            fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
+            return 1;
+        }
+        while ((curr_dirent = readdir(FD))) {
+            if (!strcmp(curr_dirent->d_name, ".") || !strcmp(curr_dirent->d_name, "..")) {
                 continue;
             }
-            full_name = malloc(sizeof(dir_name) + sizeof(in_file->d_name) + 2);
-            sprintf(full_name, "%s/%s", dir_name, in_file->d_name);
-            entry_file = fopen(full_name, "rw");
-            if (entry_file == NULL) {
+            sprintf(full_name, "%s/%s", curr_dirname->string, curr_dirent->d_name);
+            fp = fopen(full_name, "rw");
+            if (fp == NULL) {
                 fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
                 return 1;
             }
-            while (getline(&buffer, &bufsize, entry_file) != -1) {
-                printf("%s", buffer);
+            docnames[curr_doc] = malloc(strlen(full_name) + 1);
+            strcpy(docnames[curr_doc], full_name);
+            lines_num = 0;
+            while (getline(&buffer, &bufsize, fp) != -1) {
+                lines_num++;
             }
-            fclose(entry_file);
-            free(full_name);
+            doclines[curr_doc] = lines_num;
+            docs[curr_doc] = malloc(lines_num * sizeof(char*));
+            rewind(fp);     // start again from the beginning of docfile
+            for (int curr_line = 0; curr_line < lines_num; curr_line++) {
+                if (getline(&buffer, &bufsize, fp) == -1) {
+                    fprintf(stderr, "Something unexpected happened.\n");
+                    return -1;
+                }
+                docs[curr_doc][curr_line] = malloc(strlen(buffer) + 1);
+                strcpy(docs[curr_doc][curr_line], buffer);
+            }
+            fclose(fp);
+            curr_doc++;
         }
+        curr_dirname = curr_dirname->next;
     }
     if (buffer != NULL) {
         free(buffer);
     }
-    if (dir_name != NULL) {
-        free(dir_name);
+    for (int i = 0; i < doc_count; i++) {
+        printf("File: %s\n", docnames[i]);
+        for (int j = 0; j < doclines[i]; j++) {
+            printf(" %d %s\n", j, docs[i][j]);
+        }
     }
+
+//
+//
+//
+//    DIR* FD;
+//    struct dirent* curr_dirent;
+//    //char *dir_name = "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/test";
+//    char *dir_name = NULL;
+//    FILE *entry_file;
+//    char *full_name;
+//    size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
+//    char *buffer = NULL;
+//
+//    while (getline(&dir_name, &bufsize, stdin) != -1) {
+//        strtok(dir_name, "\n");
+//        if ((FD = opendir(dir_name)) == NULL) {
+//            fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
+//            return 1;
+//        }
+//        while ((curr_dirent = readdir(FD))) {
+//            if (!strcmp(curr_dirent->d_name, ".") || !strcmp(curr_dirent->d_name, "..")) {
+//                continue;
+//            }
+//            full_name = malloc(sizeof(dir_name) + sizeof(curr_dirent->d_name) + 2);
+//            sprintf(full_name, "%s/%s", dir_name, curr_dirent->d_name);
+//            entry_file = fopen(full_name, "rw");
+//            if (entry_file == NULL) {
+//                fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
+//                return 1;
+//            }
+//            while (getline(&buffer, &bufsize, entry_file) != -1) {
+//                printf("%s", buffer);
+//            }
+//            fclose(entry_file);
+//            free(full_name);
+//        }
+//    }
+//    if (buffer != NULL) {
+//        free(buffer);
+//    }
+//    if (dir_name != NULL) {
+//        free(dir_name);
+//    }
 
 
     return 0;
