@@ -13,7 +13,6 @@ typedef struct postinglistnode PostingListNode;
 
 struct postinglistnode {
     int id;
-    char *filename;
     IntListNode *firstline;
     IntListNode *lastline;
     int tf;
@@ -25,12 +24,12 @@ struct postinglist {
     PostingListNode *last;
 };
 
-PostingListNode* createPostingListNode(int id, char *filename, int line);
+PostingListNode *createPostingListNode(int id, int line);
 void deletePostingListNode(PostingListNode **listNode);
 PostingList* createPostingList();
 void deletePostingList(PostingList **postingList);
 
-int incrementPostingList(TrieNode *node, int id, char *filename, int line);
+int incrementPostingList(TrieNode *node, int id, int line);
 int getTermFrequency(PostingList *postingList, int id);
 
 #endif

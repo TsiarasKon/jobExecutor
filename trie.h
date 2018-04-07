@@ -26,8 +26,8 @@ void deleteTrieNode(TrieNode **trieNode);
 Trie* createTrie();
 void deleteTrie(Trie **trie);
 
-int directInsert(TrieNode *current, char *word, int id, char *filename, int line, int i);
-int insert(Trie *root, char *word, int id, char *filename, int line);
+int directInsert(TrieNode *current, char *word, int id, int line, int i);
+int insert(Trie *root, char *word, int id, int line);
 
 PostingList *getPostingList(Trie *root, char *word);
 

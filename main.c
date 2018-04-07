@@ -17,6 +17,7 @@ int interface(Trie *trie, char **docs, int *docWc);
 int doc_count;
 
 int main(int argc, char *argv[]) {
+    int exit_code = 0;
     char *fifo0, *fifo1;
     if (argc < 2 || !isdigit(*argv[1])) {
         ///
@@ -52,13 +53,9 @@ int main(int argc, char *argv[]) {
             last_dirname = last_dirname->next;
         }
     }
-//    while (dirnames != NULL) {
-//        printf("%s\n", dirnames->string);
-//        dirnames = dirnames->next;
-//    }
 
-    DIR* FD;
-    struct dirent* curr_dirent;
+    DIR *FD;
+    struct dirent *curr_dirent;
     doc_count = 0;
     StringListNode *curr_dirname = dirnames;
     char full_name[PATH_MAX];
@@ -78,13 +75,18 @@ int main(int argc, char *argv[]) {
     char *docnames[doc_count];
     int doclines[doc_count];
     char **docs[doc_count];
-
+    Trie *trie = createTrie();
+    if (trie == NULL) {
+        fprintf(stderr, "Failed to allocate memory.\n");
+        return 4;
+    }
     FILE *fp;
     curr_dirname = dirnames;
     int curr_doc = 0;
     int lines_num;
+    char *word;
     size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
-    char *buffer = NULL;
+    char *buffer = NULL, *bufferptr;
     while (curr_dirname != NULL) {
         if ((FD = opendir(curr_dirname->string)) == NULL) {
             fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
@@ -107,15 +109,35 @@ int main(int argc, char *argv[]) {
                 lines_num++;
             }
             doclines[curr_doc] = lines_num;
-            docs[curr_doc] = malloc(lines_num * sizeof(char*));
+            docs[curr_doc] = malloc(lines_num * sizeof(char *));
+            if (docs[curr_doc] == NULL) {
+                fprintf(stderr, "Failed to allocate memory.\n");
+                return 4;
+            }
             rewind(fp);     // start again from the beginning of docfile
             for (int curr_line = 0; curr_line < lines_num; curr_line++) {
                 if (getline(&buffer, &bufsize, fp) == -1) {
                     fprintf(stderr, "Something unexpected happened.\n");
                     return -1;
                 }
+                bufferptr = buffer;
+                strtok(buffer, "\n");
                 docs[curr_doc][curr_line] = malloc(strlen(buffer) + 1);
+                if (docs[curr_doc][curr_line] == NULL) {
+                    fprintf(stderr, "Failed to allocate memory.\n");
+                    return 4;
+                }
                 strcpy(docs[curr_doc][curr_line], buffer);
+                // insert line's words to trie
+                word = strtok(buffer, " \t");     // get first word
+                while (word != NULL) {          // for every word in doc
+                    exit_code = insert(trie, word, curr_doc, curr_line);
+                    if (exit_code > 0) {
+                        return exit_code;
+                    }
+                    word = strtok(NULL, " \t");
+                }
+                buffer = bufferptr;
             }
             fclose(fp);
             curr_doc++;
@@ -126,141 +148,21 @@ int main(int argc, char *argv[]) {
         free(buffer);
     }
     for (int i = 0; i < doc_count; i++) {
-        printf("File: %s\n", docnames[i]);
+        printf("File %d: %s\n", i, docnames[i]);
         for (int j = 0; j < doclines[i]; j++) {
             printf(" %d %s\n", j, docs[i][j]);
         }
     }
+    printf("%d %d\n", getTermFrequency(getPostingList(trie, "never"), 5), getTermFrequency(getPostingList(trie, "sdgfs"), 3));
 
-//
-//
-//
-//    DIR* FD;
-//    struct dirent* curr_dirent;
-//    //char *dir_name = "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/test";
-//    char *dir_name = NULL;
-//    FILE *entry_file;
-//    char *full_name;
-//    size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
-//    char *buffer = NULL;
-//
-//    while (getline(&dir_name, &bufsize, stdin) != -1) {
-//        strtok(dir_name, "\n");
-//        if ((FD = opendir(dir_name)) == NULL) {
-//            fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
-//            return 1;
-//        }
-//        while ((curr_dirent = readdir(FD))) {
-//            if (!strcmp(curr_dirent->d_name, ".") || !strcmp(curr_dirent->d_name, "..")) {
-//                continue;
-//            }
-//            full_name = malloc(sizeof(dir_name) + sizeof(curr_dirent->d_name) + 2);
-//            sprintf(full_name, "%s/%s", dir_name, curr_dirent->d_name);
-//            entry_file = fopen(full_name, "rw");
-//            if (entry_file == NULL) {
-//                fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
-//                return 1;
-//            }
-//            while (getline(&buffer, &bufsize, entry_file) != -1) {
-//                printf("%s", buffer);
-//            }
-//            fclose(entry_file);
-//            free(full_name);
-//        }
-//    }
-//    if (buffer != NULL) {
-//        free(buffer);
-//    }
-//    if (dir_name != NULL) {
-//        free(dir_name);
-//    }
-
-
-    return 0;
-    ///
-
-//    FILE *fp = fopen(docfile, "r");
-//    if (fp == NULL) {
-//        fprintf(stderr, "Couldn't open '%s'.\n", docfile);
-//        return 2;
-//    }
-//    printf("Loading docs from '%s'...\n", docfile);
-//    size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
-//    char *buffer = NULL, *bufferptr = NULL;
-//    for (int i = 0; ; i++) {
-//        if (getline(&buffer, &bufsize, fp) == -1) {
-//            break;
-//        }
-//        bufferptr = buffer;
-//        if (buffer[0] == '\n' || (buffer[0] == '\r' && buffer[1] == '\n'))  {     // ignore empty lines
-//            continue;
-//        }
-//        while (*buffer == ' ' || *buffer == '\t') {     // ignore whitespace before id
-//            buffer++;
-//        }
-//        if (atoi(buffer) != i) {
-//            fprintf(stderr, "Error in '%s' - Docs not in order.\n", docfile);
-//            return 3;
-//        }
-//        doc_count++;
-//        buffer = bufferptr;     // resetting buffer that maybe was moved
-//    }
-//    rewind(fp);     // start again from the beginning of docfile
-//
-//    Trie* trie = createTrie();
-//    if (trie == NULL) {
-//        fprintf(stderr, "Failed to allocate memory.\n");
-//        return 4;
-//    }
-//    char *docs[doc_count];      // "map"
-//    char *word;
-//    int docWc[doc_count];
-//    int exit_code;
-//    for (int id = 0; id < doc_count; id++) {
-//        docWc[id] = 0;
-//        if (getline(&buffer, &bufsize, fp) == -1) {
-//            fprintf(stderr, "Something unexpected happened.\n");
-//            return -1;
-//        }
-//        bufferptr = buffer;
-//        while (*buffer == ' ' || *buffer == '\t') {     // ignore whitespace before id
-//            buffer++;
-//        }
-//        while (isdigit(*buffer)) {          // ignore the id itself
-//            buffer++;
-//        }
-//        strtok(buffer, "\r\n");         // remove trailing newline character
-//        docs[id] = malloc(strlen(buffer) + 1);
-//        if (docs[id] == NULL) {
-//            fprintf(stderr, "Failed to allocate memory.\n");
-//            return 4;
-//        }
-//        strcpy(docs[id], buffer);
-//        word = strtok(buffer, " \t");     // get first word
-//        while (word != NULL) {          // for every word in doc
-//            exit_code = insert(trie, word, id);
-//            if (exit_code > 0) {
-//                return exit_code;
-//            }
-//            docWc[id]++;
-//            avgdl++;
-//            word = strtok(NULL, " \t");
-//        }
-//        buffer = bufferptr;     // resetting buffer that was moved
-//    }
-//    if (bufferptr != NULL) {
-//        free(bufferptr);
-//    }
-//    fclose(fp);
-//    printf("Docs loaded successfully!\n");
-//
-//    exit_code = interface(trie, docs, docWc);
-//
-//    deleteTrie(&trie);
-//    for (int i = 0; i < doc_count; i++) {
-//        free(docs[i]);
-//    }
-//    return exit_code;
+    deleteTrie(&trie);
+    for (int i = 0; i < doc_count; i++) {
+        for (int j = 0; j < doclines[i]; j++) {
+            free(docs[i][j]);
+        }
+        free(docs[i]);
+    }
+    return exit_code;
 }
 
 /* Exit codes:

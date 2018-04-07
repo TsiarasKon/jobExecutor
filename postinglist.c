@@ -3,19 +3,13 @@
 #include <string.h>
 #include "postinglist.h"
 
-PostingListNode* createPostingListNode(int id, char *filename, int line) {
+PostingListNode *createPostingListNode(int id, int line) {
     PostingListNode *listNode = malloc(sizeof(PostingListNode));
     if (listNode == NULL) {
         fprintf(stderr, "Failed to allocate memory.\n");
         return NULL;
     }
     listNode->id = id;
-    listNode->filename = malloc(sizeof(filename));
-    if (listNode->filename == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
-        return NULL;
-    }
-    strcpy(listNode->filename, filename);
     listNode->firstline = createIntListNode(line);
     if (listNode->firstline == NULL) {
         fprintf(stderr, "Failed to allocate memory.\n");
@@ -35,7 +29,6 @@ void deletePostingListNode(PostingListNode **listNode) {
     PostingListNode *next;
     IntListNode *currentlinenode, *nextlinenode;
     while (current != NULL) {
-        free(current->filename);
         currentlinenode = current->firstline;
         while (currentlinenode != NULL) {       // Also delete LineList
             nextlinenode = currentlinenode->next;
@@ -71,11 +64,11 @@ void deletePostingList(PostingList **postingList) {
     *postingList = NULL;
 }
 
-int incrementPostingList(TrieNode *node, int id, char *filename, int line) {
+int incrementPostingList(TrieNode *node, int id, int line) {
     PostingList **PostingList = &node->postingList;
     // If list is empty, create a listNode and set both first and last to point to it
     if ((*PostingList)->first == NULL) {
-        (*PostingList)->first = createPostingListNode(id, filename, line);
+        (*PostingList)->first = createPostingListNode(id, line);
         if ((*PostingList)->first == NULL) {
             fprintf(stderr, "Failed to allocate memory.\n");
             return 4;
@@ -94,7 +87,7 @@ int incrementPostingList(TrieNode *node, int id, char *filename, int line) {
         (*PostingList)->last->lastline = (*PostingList)->last->lastline->next;  // update pointer to lastline
         (*PostingList)->last->tf++;
     } else {
-        (*PostingList)->last->next = createPostingListNode(id, filename, line);
+        (*PostingList)->last->next = createPostingListNode(id, line);
         if ((*PostingList)->last->next == NULL) {
             fprintf(stderr, "Failed to allocate memory.\n");
             return 4;

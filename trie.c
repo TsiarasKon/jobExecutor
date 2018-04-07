@@ -57,7 +57,7 @@ void deleteTrie(Trie **trie) {
 /* Called by insert() when a new trieNode->child is created.
  * At that point no further checking is required to insert the rest of the word's letters
  * as each one of them will merely create a new trieNode. */
-int directInsert(TrieNode *current, char *word, int id, char *filename, int line, int i) {
+int directInsert(TrieNode *current, char *word, int id, int line, int i) {
     while (i < strlen(word) - 1) {
         current->child = createTrieNode(word[i], NULL);
         if (current->child == NULL) {
@@ -72,10 +72,10 @@ int directInsert(TrieNode *current, char *word, int id, char *filename, int line
         fprintf(stderr, "Failed to allocate memory.\n");
         return 4;
     }
-    return incrementPostingList(current->child, id, filename, line);
+    return incrementPostingList(current->child, id, line);
 }
 
-int insert(Trie *root, char *word, int id, char *filename, int line) {
+int insert(Trie *root, char *word, int id, int line) {
     if (word[0] == '\0') {      // word is an empty string
         return 0;
     }
@@ -83,10 +83,10 @@ int insert(Trie *root, char *word, int id, char *filename, int line) {
     if (root->first == NULL) {      // only in first Trie insert
         root->first = createTrieNode(word[0], NULL);
         if (wordlen == 1) {     // just inserted the final letter (one-letter word)
-            incrementPostingList(root->first, id, filename, line);
+            incrementPostingList(root->first, id, line);
             return 0;
         }
-        return directInsert(root->first, word, id, filename, line, 1);
+        return directInsert(root->first, word, id, line, 1);
     }
     TrieNode **current = &root->first;
     for (int i = 0; i < wordlen; i++) {         // for each letter of word
@@ -110,11 +110,11 @@ int insert(Trie *root, char *word, int id, char *filename, int line) {
         }
         // Go to next letter:
         if (i == wordlen - 1) {     // just inserted the final letter
-            return incrementPostingList((*current), id, filename, line);
+            return incrementPostingList((*current), id, line);
         } else if ((*current)->child != NULL) {     // proceed to child
             current = &(*current)->child;
         } else {    // child doesn't exist so we just add the entire word in the trie
-            return directInsert((*current), word, id, filename, line, i + 1);
+            return directInsert((*current), word, id, line, i + 1);
         }
     }
     return 0;
