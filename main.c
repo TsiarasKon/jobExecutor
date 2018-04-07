@@ -279,7 +279,30 @@ int main(int argc, char *argv[]) {
             }
             printf("'%s' appears the least in \"%s\". //(%d times)//\n", keyword, docnames[min_id], min_tf);
         } else if (!strcmp(command, cmds[3])) {       // wc
-
+            int total_chars = 0, total_words = 0, total_lines = 0;
+            FILE *pp;
+            char command_wc[PATH_MAX + 5];
+            for (curr_doc = 0; curr_doc < doc_count; curr_doc++) {
+                sprintf(command_wc, "wc \"%s\"", docnames[curr_doc]);
+                pp = popen(command_wc, "r");
+                if (pp == NULL) {
+                    printf("Failed to run command\n");
+                    return 74;
+                }
+                buffer = bufferptr;
+                if (getline(&buffer, &bufsize, pp) == -1) {
+                    printf("Failed to run command\n");
+                    return 74;
+                }
+                printf("%s\n", buffer);
+                total_chars += atoi(strtok(buffer, " \t"));
+                total_words += atoi(strtok(NULL, " \t"));
+                total_lines += atoi(strtok(NULL, " \t"));
+                pclose(pp);
+            }
+            printf("Worker bytes: %d\n", total_chars);
+            printf("Worker words: %d\n", total_words);
+            printf("Worker lines: %d\n", total_lines);
         } else if (!strcmp(command, cmds[4])) {             /// not here
             printf("Available commands (use without quotes):\n");
             printf(" '/search word1 word2 ... -d sec' for a list of the files that include the given words, along with the lines where they appear. Results will be printed within the seconds given as a deadline.\n");
