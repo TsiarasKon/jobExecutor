@@ -9,14 +9,17 @@
 extern int doc_count;
 
 int interface(Trie *trie, char **docs, int *docWc) {
+
+    const char *cmds[6] = {
+            "/search",
+            "/maxcount",
+            "/mincount",
+            "/wc",
+            "/help",
+            "/exit"
+    };
+
     char *command;
-    char *cmds[6];
-    cmds[0] = "/search";
-    cmds[1] = "/maxcount";
-    cmds[2] = "/mincount";
-    cmds[3] = "/wc";
-    cmds[4] = "/exit";
-    cmds[5] = "/help";
     size_t bufsize = 32;   ///   // sample size - getline will reallocate memory as needed
     char *buffer = malloc(bufsize);
     if (buffer == NULL) {
@@ -25,6 +28,7 @@ int interface(Trie *trie, char **docs, int *docWc) {
     }
     char *bufferptr;       // used to free buffer after using strtok
     while (1) {
+        printf("\n");
         // Until "/exit" is given, read current line and attempt to execute it as a command
         printf("Type a command:\n");
         getline(&buffer, &bufsize, stdin);
@@ -104,10 +108,7 @@ int interface(Trie *trie, char **docs, int *docWc) {
 
         } else if (!strcmp(command, cmds[3])) {       // wc
 
-        } else if (!strcmp(command, cmds[4])) {       // exit
-            break;
-        } else if (!strcmp(command, cmds[5])) {       // help
-            /// TODO
+        } else if (!strcmp(command, cmds[4])) {       // help
             printf("Available commands (use without quotes):\n");
             printf(" '/search word1 word2 ... -d sec' for a list of the files that include the given words, along with the lines where they appear. Results will be printed within the seconds given as a deadline.\n");
             printf(" '/maxcount word' for the file where the given word appears the most.\n");
@@ -115,11 +116,12 @@ int interface(Trie *trie, char **docs, int *docWc) {
             printf(" '/wc' for the number of characters (bytes), words and lines of every file.\n");
             printf(" '/help' for the list you're seeing right now.\n");
             printf(" '/exit' to terminate this program.\n");
+        } else if (!strcmp(command, cmds[5])) {       // exit
+            break;
         } else {
             fprintf(stderr, "Unknown command '%s': Type '/help' for a detailed list of available commands.\n", command);
         }
         buffer = bufferptr;
-        printf("\n");
     }
     free(bufferptr);
     return 0;

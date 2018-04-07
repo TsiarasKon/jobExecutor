@@ -1,6 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+
 typedef struct stringlistnode StringListNode;
 struct stringlistnode {
     char *string;

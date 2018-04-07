@@ -41,19 +41,20 @@ int main(int argc, char *argv[]) {
             dirnames = createStringListNode(msgbuf);
             if (dirnames == NULL) {
                 fprintf(stderr, "Failed to allocate memory.\n");
-                return NULL;
+                return 4;
             }
             last_dirname = dirnames;
         } else {
             last_dirname->next = createStringListNode(msgbuf);
             if (last_dirname->next == NULL) {
                 fprintf(stderr, "Failed to allocate memory.\n");
-                return NULL;
+                return 4;
             }
             last_dirname = last_dirname->next;
         }
     }
 
+    // First count the number of documents:
     DIR *FD;
     struct dirent *curr_dirent;
     doc_count = 0;
@@ -144,17 +145,162 @@ int main(int argc, char *argv[]) {
         }
         curr_dirname = curr_dirname->next;
     }
-    if (buffer != NULL) {
-        free(buffer);
-    }
     for (int i = 0; i < doc_count; i++) {
         printf("File %d: %s\n", i, docnames[i]);
         for (int j = 0; j < doclines[i]; j++) {
             printf(" %d %s\n", j, docs[i][j]);
         }
     }
-    printf("%d %d\n", getTermFrequency(getPostingList(trie, "never"), 5), getTermFrequency(getPostingList(trie, "sdgfs"), 3));
 
+
+    const char *cmds[6] = {
+            "/search",
+            "/maxcount",
+            "/mincount",
+            "/wc",
+            "/help",
+            "/exit"
+    };
+
+
+
+    char *command;
+    while (1) {
+        printf("\n");
+        // Until "/exit" is given, read current line and attempt to execute it as a command
+        printf("Type a command:\n");
+        getline(&buffer, &bufsize, stdin);
+        bufferptr = buffer;
+        strtok(buffer, "\n");     // remove trailing newline character
+        command = strtok(buffer, " ");
+        if (!strcmp(command, cmds[0]) || !strcmp(command, "/s")) {          // search
+//            command = strtok(NULL, " \t");
+//            if (command == NULL) {
+//                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
+//                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+//                continue;
+//            }
+//            char *terms[10];
+//            terms[0] = command;
+//            for (int i = 1; i < 10; i++) {
+//                terms[i] = NULL;
+//            }
+//            int term_count = 1;
+//            command = strtok(NULL, " \t");
+//            while (command != NULL && term_count < 10) {
+//                terms[term_count] = command;
+//                term_count++;
+//                command = strtok(NULL, " \t");
+//            }
+//
+//            /* For each term, we'll start by keeping a pointer to its first postingList (postingListPtr array)
+//             * Then, we'll iterate through all the docs adding and checking these pointers for each one.
+//             * If the postingListPtr[i] points to a list with id less than the current's doc_id, we point it to its next.
+//             * If we surpass it, since the listNodes are in order of id, there is no postinglist for this doc in that term.
+//             * Else, if a match is found, we calculate the score() for this doc and term.
+//             * Each doc that contained a search term is then added to a pairing heap for later printing. */
+//            HeapNode *heap = NULL;
+//            PostingListNode *postingListPtr[term_count];
+//            PostingList *tempPostingList;
+//            for (int i = 0; i < term_count; i++) {
+//                tempPostingList = getPostingList(trie, terms[i]);
+//                postingListPtr[i] = (tempPostingList == NULL) ? NULL : tempPostingList->first;
+//            }
+//            double doc_score;
+//            int tf;
+//            char found;
+//            for (int id = 0; id < doc_count; id++) {
+//                doc_score = 0;
+//                found = 0;
+//                for (int i = 0; i < term_count; i++) {
+//                    while (postingListPtr[i] != NULL && postingListPtr[i]->id < id) {
+//                        postingListPtr[i] = postingListPtr[i]->next;
+//                    }
+//                    // We suprassed the id - term is not contained in current doc
+//                    if (postingListPtr[i] == NULL || postingListPtr[i]->id > id) {
+//                        continue;
+//                    }
+//                    // Else doc_id exists in this posting list:
+//                    tempPostingList = getPostingList(trie, terms[i]);
+//                    tf = getTermFrequency(tempPostingList, id);
+//                    if (tf <= 0) {   // getPostingList() returned NULL <=> word doesn't exist in trie
+//                        continue;
+//                    }
+//                    found = 1;
+//                    //doc_score += score(tf, tempPostingList->df, docWc[id]);
+//                }
+//                if (found) {
+//                    heap = heapInsert(heap, doc_score, id);
+//                }
+//            }
+//            //int exit_code = print_results(&heap, docs, terms);
+//            if (heap != NULL) {
+//                destroyHeap(&heap);
+//            }
+//            if (exit_code > 0) {      // failed to print results (due to an inability to allocate memory)
+//                return exit_code;
+//            }
+        } else if (!strcmp(command, cmds[1])) {       // maxcount
+            char *keyword = strtok(NULL, " \t");
+            PostingList *keywordPostingList = getPostingList(trie, keyword);
+            if (keywordPostingList == NULL) {
+                printf("'%s' doesn't exist in docs.\n", keyword);
+                continue;
+            }
+            PostingListNode *current = keywordPostingList->first;
+            int max_id = keywordPostingList->first->id;
+            int max_tf = keywordPostingList->first->tf;
+            current = current->next;
+            while (current != NULL) {
+                if (current->tf > max_tf || (current->tf == max_tf && (strcmp(docnames[current->id], docnames[max_id]) < 0))) {
+                    max_id = current->id;
+                    max_tf = current->tf;
+                }
+                current = current->next;
+            }
+            printf("'%s' appears the most in \"%s\". //(%d times)//\n", keyword, docnames[max_id], max_tf);
+        } else if (!strcmp(command, cmds[2])) {       // mincount
+            char *keyword = strtok(NULL, " \t");
+            PostingList *keywordPostingList = getPostingList(trie, keyword);
+            if (keywordPostingList == NULL) {
+                printf("'%s' doesn't exist in docs.\n", keyword);
+                continue;
+            }
+            PostingListNode *current = keywordPostingList->first;
+            int min_id = keywordPostingList->first->id;
+            int min_tf = keywordPostingList->first->tf;
+            current = current->next;
+            while (current != NULL) {
+                if (current->tf < min_tf || (current->tf == min_tf && (strcmp(docnames[current->id], docnames[min_id]) < 0))) {
+                    min_id = current->id;
+                    min_tf = current->tf;
+                }
+                current = current->next;
+            }
+            printf("'%s' appears the least in \"%s\". //(%d times)//\n", keyword, docnames[min_id], min_tf);
+        } else if (!strcmp(command, cmds[3])) {       // wc
+
+        } else if (!strcmp(command, cmds[4])) {             /// not here
+            printf("Available commands (use without quotes):\n");
+            printf(" '/search word1 word2 ... -d sec' for a list of the files that include the given words, along with the lines where they appear. Results will be printed within the seconds given as a deadline.\n");
+            printf(" '/maxcount word' for the file where the given word appears the most.\n");
+            printf(" '/mincount word' for the file where the given word appears the least (but at least once).\n");
+            printf(" '/wc' for the number of characters (bytes), words and lines of every file.\n");
+            printf(" '/help' for the list you're seeing right now.\n");
+            printf(" '/exit' to terminate this program.\n");
+        } else if (!strcmp(command, cmds[5])) {       // exit
+            break;
+        } else {
+            fprintf(stderr, "Unknown command '%s': Type '/help' for a detailed list of available commands.\n", command);
+        }
+        buffer = bufferptr;
+    }
+
+
+
+    if (bufferptr != NULL) {
+        free(bufferptr);
+    }
     deleteTrie(&trie);
     for (int i = 0; i < doc_count; i++) {
         for (int j = 0; j < doclines[i]; j++) {

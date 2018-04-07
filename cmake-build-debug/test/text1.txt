@@ -3,3 +3,4 @@ a single
 text
 test file
 Hello
+never

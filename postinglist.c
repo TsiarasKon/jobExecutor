@@ -17,6 +17,7 @@ PostingListNode *createPostingListNode(int id, int line) {
     }
     listNode->lastline = listNode->firstline;
     listNode->tf = 1;
+    listNode->next = NULL;
     return listNode;
 }
 
