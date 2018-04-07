@@ -6,19 +6,45 @@
 #include <dirent.h>
 #include <errno.h>
 #include <linux/limits.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "trie.h"
+#include "doc_struct.h"
 
 int interface(Trie *trie, char **docs, int *docWc);
 
 int doc_count;
 
 int main(int argc, char *argv[]) {
+    char *fifo0, *fifo1;
+    if (argc < 2 || !isdigit(*argv[1])) {
+        ///
+        printf("Error in args\n");
+        return 27;
+    }
+    asprintf(&fifo0, "%s/Worker%d_0", PIPEPATH, atoi(argv[1]));
+    asprintf(&fifo1, "%s/Worker%d_1", PIPEPATH, atoi(argv[1]));
+    int fd0 = open(fifo0, O_RDONLY);
+    int fd1 = 5;//open(fifo1, O_WRONLY | O_NONBLOCK);
+    if (fd0 < 0 || fd1 < 0) {
+        perror("fifo open error");
+        return 1;
+    }
+
+    char msgbuf[BUFSIZ];
+    while (read(fd0, msgbuf, BUFSIZ) > 0) {
+        printf("%s\n", msgbuf);
+    }
+    printf("It's over!");
+    return 0;
+
+
     DIR* FD;
     struct dirent* in_file;
     //char *dir_name = "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/test";
     char *dir_name = NULL;
     FILE *entry_file;
-    char full_name[PATH_MAX];
+    char *full_name;
     size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
     char *buffer = NULL;
 
@@ -32,6 +58,7 @@ int main(int argc, char *argv[]) {
             if (!strcmp(in_file->d_name, ".") || !strcmp(in_file->d_name, "..")) {
                 continue;
             }
+            full_name = malloc(sizeof(dir_name) + sizeof(in_file->d_name) + 2);
             sprintf(full_name, "%s/%s", dir_name, in_file->d_name);
             entry_file = fopen(full_name, "rw");
             if (entry_file == NULL) {
@@ -42,6 +69,7 @@ int main(int argc, char *argv[]) {
                 printf("%s", buffer);
             }
             fclose(entry_file);
+            free(full_name);
         }
     }
     if (buffer != NULL) {
@@ -50,6 +78,7 @@ int main(int argc, char *argv[]) {
     if (dir_name != NULL) {
         free(dir_name);
     }
+
 
     return 0;
     ///

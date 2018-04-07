@@ -6,6 +6,8 @@
 
 #IncludeRegexTransform: 
 
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/doc_struct.h
+
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/interface.c
 stdio.h
 -
@@ -35,8 +37,14 @@ errno.h
 -
 linux/limits.h
 -
+fcntl.h
+-
+unistd.h
+-
 trie.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
+doc_struct.h
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/doc_struct.h
 
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.c
 stdio.h
@@ -52,6 +60,8 @@ pairingheap.h
 stdio.h
 -
 stdlib.h
+-
+string.h
 -
 postinglist.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.h
