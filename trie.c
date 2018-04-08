@@ -6,7 +6,7 @@
 TrieNode* createTrieNode(char value, TrieNode *next) {
     TrieNode* nptr = malloc(sizeof(TrieNode));
     if (nptr == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
+        perror("Failed to allocate memory");
         return NULL;
     }
     nptr->value = value;
@@ -35,7 +35,7 @@ void deleteTrieNode(TrieNode **trieNode) {      // called by deleteTrie() to del
 Trie* createTrie() {
     Trie* tptr = malloc(sizeof(Trie));
     if (tptr == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
+        perror("Failed to allocate memory");
         return NULL;
     }
     tptr->first = NULL;
@@ -61,30 +61,30 @@ int directInsert(TrieNode *current, char *word, int id, int line, int i) {
     while (i < strlen(word) - 1) {
         current->child = createTrieNode(word[i], NULL);
         if (current->child == NULL) {
-            fprintf(stderr, "Failed to allocate memory.\n");
-            return 4;
+            perror("Error allocating memory");
+            return EC_MEM;
         }
         current = current->child;
         i++;
     }
     current->child = createTrieNode(word[i], NULL);       // final letter
     if (current->child == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
-        return 4;
+        perror("Error allocating memory");
+        return EC_MEM;
     }
     return incrementPostingList(current->child, id, line);
 }
 
 int insert(Trie *root, char *word, int id, int line) {
     if (word[0] == '\0') {      // word is an empty string
-        return 0;
+        return EC_OK;
     }
     size_t wordlen = strlen(word);
     if (root->first == NULL) {      // only in first Trie insert
         root->first = createTrieNode(word[0], NULL);
         if (wordlen == 1) {     // just inserted the final letter (one-letter word)
             incrementPostingList(root->first, id, line);
-            return 0;
+            return EC_OK;
         }
         return directInsert(root->first, word, id, line, 1);
     }
@@ -94,8 +94,8 @@ int insert(Trie *root, char *word, int id, int line) {
             if ((*current)->next == NULL) {             // no next - create trieNode in this level
                 (*current)->next = createTrieNode(word[i], NULL);
                 if ((*current)->next == NULL) {
-                    fprintf(stderr, "Failed to allocate memory.\n");
-                    return 4;
+                    perror("Error allocating memory");
+                    return EC_MEM;
                 }
             }
             current = &(*current)->next;
@@ -103,8 +103,8 @@ int insert(Trie *root, char *word, int id, int line) {
         if ((*current) != NULL && word[i] < (*current)->value) {      // must be inserted before to keep sorted
             TrieNode *newNode = createTrieNode(word[i], (*current));
             if (newNode == NULL) {
-                fprintf(stderr, "Failed to allocate memory.\n");
-                return 4;
+                perror("Error allocating memory");
+                return EC_MEM;
             }
             *current = newNode;
         }
@@ -117,7 +117,7 @@ int insert(Trie *root, char *word, int id, int line) {
             return directInsert((*current), word, id, line, i + 1);
         }
     }
-    return 0;
+    return EC_OK;
 }
 
 PostingList *getPostingList(Trie *root, char *word) {
@@ -148,48 +148,3 @@ PostingList *getPostingList(Trie *root, char *word) {
     }
     return NULL;
 }
-
-//int printTrieNode(TrieNode *node, char *prefix) {
-//    TrieNode *currentChild = node->child;
-//    size_t prefixLen = strlen(prefix);
-//    char *word = malloc(prefixLen + 2);
-//    if (word == NULL) {
-//        fprintf(stderr, "Failed to allocate memory.\n");
-//        return 4;
-//    }
-//    strcpy(word, prefix);
-//    word[prefixLen + 1] = '\0';     // "manually" null-terminate string
-//    int exit_code;
-//    while (currentChild != NULL) {
-//        word[prefixLen] = currentChild->value;      // "word" is the so-far prefix + current letter
-//        if (currentChild->postingList->first != NULL) {     // if "word" is exists as a word in trie
-//            printf("%s %d\n", word, currentChild->postingList->df);
-//        }
-//        exit_code = printTrieNode(currentChild, word);     // print all the words with "word" as a prefix
-//        if (exit_code > 0) {
-//            return exit_code;
-//        }
-//        currentChild = currentChild->next;
-//    }
-//    free(word);
-//    return 0;
-//}
-//
-//int printTrie(Trie *root) {
-//    TrieNode *current = root->first;
-//    char first_letter[2];
-//    first_letter[1] = '\0';     // "manually" null-terminate string
-//    int exit_code;
-//    while (current != NULL) {   // for each letter in the first level of trie
-//        if (current->postingList->first != NULL) {      // if first_letter exists as a word in trie
-//            printf("%c %d\n", current->value, current->postingList->df);
-//        }
-//        first_letter[0] = current->value;
-//        exit_code = printTrieNode(current, first_letter);   // print all the words starting from first_letter
-//        if (exit_code > 0) {
-//            return exit_code;
-//        }
-//        current = current->next;
-//    }
-//    return 0;
-//}

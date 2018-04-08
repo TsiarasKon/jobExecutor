@@ -20,17 +20,16 @@ int main(int argc, char *argv[]) {
     int exit_code = 0;
     char *fifo0, *fifo1;
     if (argc < 2 || !isdigit(*argv[1])) {
-        ///
-        printf("Error in args\n");
-        return 27;
+        perror("Invalid arguments. Please run ");       ///
+        return EC_ARG;
     }
     asprintf(&fifo0, "%s/Worker%d_0", PIPEPATH, atoi(argv[1]));
     asprintf(&fifo1, "%s/Worker%d_1", PIPEPATH, atoi(argv[1]));
     int fd0 = open(fifo0, O_RDONLY);
     int fd1 = 5;//open(fifo1, O_WRONLY | O_NONBLOCK);
     if (fd0 < 0 || fd1 < 0) {
-        perror("fifo open error");
-        return 1;
+        perror("Error opening pipes");
+        return EC_FIFO;
     }
 
     char msgbuf[BUFSIZ];
@@ -38,17 +37,13 @@ int main(int argc, char *argv[]) {
     StringListNode *last_dirname = NULL;
     while (read(fd0, msgbuf, BUFSIZ) > 0) {
         if (dirnames == NULL) {     // only for first dir
-            dirnames = createStringListNode(msgbuf);
-            if (dirnames == NULL) {
-                fprintf(stderr, "Failed to allocate memory.\n");
-                return 4;
+            if ((dirnames = createStringListNode(msgbuf)) == NULL) {
+                return EC_MEM;
             }
             last_dirname = dirnames;
         } else {
-            last_dirname->next = createStringListNode(msgbuf);
-            if (last_dirname->next == NULL) {
-                fprintf(stderr, "Failed to allocate memory.\n");
-                return 4;
+            if ((last_dirname->next = createStringListNode(msgbuf)) == NULL) {
+                return EC_MEM;
             }
             last_dirname = last_dirname->next;
         }
@@ -61,8 +56,8 @@ int main(int argc, char *argv[]) {
     StringListNode *curr_dirname = dirnames;
     while (curr_dirname != NULL) {
         if ((FD = opendir(curr_dirname->string)) == NULL) {
-            fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
-            return 1;
+            perror("Error opening directory");
+            return EC_DIR;
         }
         while ((curr_dirent = readdir(FD))) {
             if ((strcmp(curr_dirent->d_name, ".") != 0) && (strcmp(curr_dirent->d_name, "..") != 0)) {
@@ -77,8 +72,7 @@ int main(int argc, char *argv[]) {
     char **docs[doc_count];
     Trie *trie = createTrie();
     if (trie == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
-        return 4;
+        return EC_MEM;
     }
     FILE *fp;
     curr_dirname = dirnames;
@@ -90,8 +84,8 @@ int main(int argc, char *argv[]) {
     char *buffer = NULL, *bufferptr;
     while (curr_dirname != NULL) {
         if ((FD = opendir(curr_dirname->string)) == NULL) {
-            fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
-            return 1;
+            perror("Error opening directory");
+            return EC_DIR;
         }
         while ((curr_dirent = readdir(FD))) {
             if (!strcmp(curr_dirent->d_name, ".") || !strcmp(curr_dirent->d_name, "..")) {
@@ -99,13 +93,13 @@ int main(int argc, char *argv[]) {
             }
             sprintf(symb_name, "%s/%s", curr_dirname->string, curr_dirent->d_name);
             if (realpath(symb_name, full_name) == NULL) {       // getting full file path
-                fprintf(stderr, "Error : Invalid file name - %s\n", strerror(errno));
-                return 241;
+                perror("Invalid file name");
+                return EC_FILE;
             }
             fp = fopen(full_name, "r");
             if (fp == NULL) {
-                fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
-                return 1;
+                perror("Failed to open file");
+                return EC_FILE;
             }
             docnames[curr_doc] = malloc(strlen(full_name) + 1);
             strcpy(docnames[curr_doc], full_name);
@@ -116,21 +110,21 @@ int main(int argc, char *argv[]) {
             doclines[curr_doc] = lines_num;
             docs[curr_doc] = malloc(lines_num * sizeof(char *));
             if (docs[curr_doc] == NULL) {
-                fprintf(stderr, "Failed to allocate memory.\n");
-                return 4;
+                perror("Failed to allocate memory");
+                return EC_MEM;
             }
             rewind(fp);     // start again from the beginning of docfile
             for (int curr_line = 0; curr_line < lines_num; curr_line++) {
                 if (getline(&buffer, &bufsize, fp) == -1) {
-                    fprintf(stderr, "Something unexpected happened.\n");
-                    return -1;
+                    perror("Error");
+                    return EC_UNKNOWN;
                 }
                 bufferptr = buffer;
                 strtok(buffer, "\n");
                 docs[curr_doc][curr_line] = malloc(strlen(buffer) + 1);
                 if (docs[curr_doc][curr_line] == NULL) {
-                    fprintf(stderr, "Failed to allocate memory.\n");
-                    return 4;
+                    perror("Failed to allocate memory");
+                    return EC_MEM;
                 }
                 strcpy(docs[curr_doc][curr_line], buffer);
                 // insert line's words to trie
@@ -149,6 +143,7 @@ int main(int argc, char *argv[]) {
         }
         curr_dirname = curr_dirname->next;
     }
+    ///
     for (int i = 0; i < doc_count; i++) {
         printf("File %d: %s\n", i, docnames[i]);
         for (int j = 0; j < doclines[i]; j++) {
@@ -285,13 +280,13 @@ int main(int argc, char *argv[]) {
                 sprintf(command_wc, "wc \"%s\"", docnames[curr_doc]);
                 pp = popen(command_wc, "r");
                 if (pp == NULL) {
-                    printf("Failed to run command\n");
-                    return 74;
+                    perror("Failed to run command");
+                    return EC_CMD;
                 }
                 buffer = bufferptr;
                 if (getline(&buffer, &bufsize, pp) == -1) {
-                    printf("Failed to run command\n");
-                    return 74;
+                    perror("Failed to run command");
+                    return EC_CMD;
                 }
                 //printf("%s\n", buffer);
                 total_chars += atoi(strtok(buffer, " \t"));
@@ -335,12 +330,3 @@ int main(int argc, char *argv[]) {
     }
     return exit_code;
 }
-
-/* Exit codes:
- * 0: Success
- * 1: Invalid command line arguments
- * 2: Failed to open given file
- * 3: Docs in file not in order
- * 4: Memory allocation failed
- * -1: Some unexpected error
-*/

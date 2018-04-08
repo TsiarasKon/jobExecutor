@@ -6,7 +6,7 @@
 HeapNode* createHeapNode(double score, int id) {
     HeapNode *heapNode = malloc(sizeof(HeapNode));
     if (heapNode == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
+        perror("Failed to allocate memory");
         return NULL;
     }
     heapNode->score = score;
@@ -69,7 +69,7 @@ HeapNode* mergePairs(HeapNode *children) {
 HeapNode* heapInsert(HeapNode *heap, double score, int id) {
     HeapNode *newHeapNode = createHeapNode(score, id);
     if (newHeapNode == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
+        perror("Failed to allocate memory");
         return NULL;
     }
     return heapMerge(heap, newHeapNode);

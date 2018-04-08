@@ -6,13 +6,13 @@
 PostingListNode *createPostingListNode(int id, int line) {
     PostingListNode *listNode = malloc(sizeof(PostingListNode));
     if (listNode == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
+        perror("Failed to allocate memory");
         return NULL;
     }
     listNode->id = id;
     listNode->firstline = createIntListNode(line);
     if (listNode->firstline == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
+        perror("Failed to allocate memory");
         return NULL;
     }
     listNode->lastline = listNode->firstline;
@@ -46,7 +46,7 @@ void deletePostingListNode(PostingListNode **listNode) {
 PostingList* createPostingList() {
     PostingList *postingList = malloc(sizeof(PostingList));
     if (postingList == NULL) {
-        fprintf(stderr, "Failed to allocate memory.\n");
+        perror("Failed to allocate memory");
         return NULL;
     }
     postingList->first = postingList->last = NULL;
@@ -71,31 +71,31 @@ int incrementPostingList(TrieNode *node, int id, int line) {
     if ((*PostingList)->first == NULL) {
         (*PostingList)->first = createPostingListNode(id, line);
         if ((*PostingList)->first == NULL) {
-            fprintf(stderr, "Failed to allocate memory.\n");
-            return 4;
+            perror("Error allocating memory");
+            return EC_MEM;
         }
         (*PostingList)->last = (*PostingList)->first;
-        return 0;
+        return EC_OK;
     }
     /* Words are inserted in order of id, so the posting list we're looking for either
      * is the last one or it doesn't exist and should be created after the last */
     if ((*PostingList)->last->id == id) {      // word belongs to last doc
         (*PostingList)->last->lastline->next = createIntListNode(line);    // append a IntListNode
         if ((*PostingList)->last->lastline->next == NULL) {
-            fprintf(stderr, "Failed to allocate memory.\n");
-            return 4;
+            perror("Error allocating memory");
+            return EC_MEM;
         }
         (*PostingList)->last->lastline = (*PostingList)->last->lastline->next;  // update pointer to lastline
         (*PostingList)->last->tf++;
     } else {
         (*PostingList)->last->next = createPostingListNode(id, line);
         if ((*PostingList)->last->next == NULL) {
-            fprintf(stderr, "Failed to allocate memory.\n");
-            return 4;
+            perror("Error allocating memory");
+            return EC_MEM;
         }
         (*PostingList)->last = (*PostingList)->last->next;
     }
-    return 0;
+    return EC_OK;
 }
 
 int getTermFrequency(PostingList *postingList, int id) {        // returns 0 if not found
