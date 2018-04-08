@@ -1,0 +1,15 @@
+2018-04-09 00:03:42 : search : Lorem :
+2018-04-09 00:03:42 : search : ipsum : ./anothertest/much text
+2018-04-09 00:03:47 : wc : :
+2018-04-09 00:03:54 : mincount : desert : ./anothertest/many lines
+2018-04-09 00:04:18 : search : Never :
+2018-04-09 00:04:18 : search : gonna : ./anothertest/many lines
+2018-04-09 00:04:18 : search : give : ./anothertest/many lines
+2018-04-09 00:04:18 : search : you : ./anothertest/many lines
+2018-04-09 00:04:18 : search : up : ./anothertest/many lines
+2018-04-09 00:04:33 : search : Hello : ./test/text2.txt : ./test/text1.txt
+2018-04-09 00:04:33 : search : there : ./test/text2.txt
+2018-04-09 00:04:40 : maxcount : there : ./test/text2.txt
+2018-04-09 00:04:48 : maxcount : svderfvdf :
+2018-04-09 00:04:57 : maxcount : you : ./anothertest/many lines
+2018-04-09 00:05:10 : search : sgers :

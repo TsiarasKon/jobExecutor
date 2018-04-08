@@ -173,76 +173,62 @@ int main(int argc, char *argv[]) {
         getline(&buffer, &bufsize, stdin);
         bufferptr = buffer;
         strtok(buffer, "\n");     // remove trailing newline character
-        command = strtok(buffer, " ");
-        if (!strcmp(command, cmds[0]) || !strcmp(command, "/s")) {          // search
-//            command = strtok(NULL, " \t");
-//            if (command == NULL) {
-//                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
-//                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            char *terms[10];
-//            terms[0] = command;
-//            for (int i = 1; i < 10; i++) {
-//                terms[i] = NULL;
-//            }
-//            int term_count = 1;
-//            command = strtok(NULL, " \t");
-//            while (command != NULL && term_count < 10) {
-//                terms[term_count] = command;
-//                term_count++;
-//                command = strtok(NULL, " \t");
-//            }
-//
-//            /* For each term, we'll start by keeping a pointer to its first postingList (postingListPtr array)
-//             * Then, we'll iterate through all the docs adding and checking these pointers for each one.
-//             * If the postingListPtr[i] points to a list with id less than the current's doc_id, we point it to its next.
-//             * If we surpass it, since the listNodes are in order of id, there is no postinglist for this doc in that term.
-//             * Else, if a match is found, we calculate the score() for this doc and term.
-//             * Each doc that contained a search term is then added to a pairing heap for later printing. */
-//            HeapNode *heap = NULL;
-//            PostingListNode *postingListPtr[term_count];
-//            PostingList *tempPostingList;
-//            for (int i = 0; i < term_count; i++) {
-//                tempPostingList = getPostingList(trie, terms[i]);
-//                postingListPtr[i] = (tempPostingList == NULL) ? NULL : tempPostingList->first;
-//            }
-//            double doc_score;
-//            int tf;
-//            char found;
-//            for (int id = 0; id < doc_count; id++) {
-//                doc_score = 0;
-//                found = 0;
-//                for (int i = 0; i < term_count; i++) {
-//                    while (postingListPtr[i] != NULL && postingListPtr[i]->id < id) {
-//                        postingListPtr[i] = postingListPtr[i]->next;
-//                    }
-//                    // We suprassed the id - term is not contained in current doc
-//                    if (postingListPtr[i] == NULL || postingListPtr[i]->id > id) {
-//                        continue;
-//                    }
-//                    // Else doc_id exists in this posting list:
-//                    tempPostingList = getPostingList(trie, terms[i]);
-//                    tf = getTermFrequency(tempPostingList, id);
-//                    if (tf <= 0) {   // getPostingList() returned NULL <=> word doesn't exist in trie
-//                        continue;
-//                    }
-//                    found = 1;
-//                    //doc_score += score(tf, tempPostingList->df, docWc[id]);
-//                }
-//                if (found) {
-//                    heap = heapInsert(heap, doc_score, id);
-//                }
-//            }
-//            //int exit_code = print_results(&heap, docs, terms);
-//            if (heap != NULL) {
-//                destroyHeap(&heap);
-//            }
-//            if (exit_code > 0) {      // failed to print results (due to an inability to allocate memory)
-//                return exit_code;
-//            }
+        command = strtok(buffer, " \t");
+        if (!strcmp(command, cmds[0])) {          // search
+            char *keyword = strtok(NULL, " \t");
+            if (keyword == NULL || !strcmp(keyword, "-d")) {
+                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            StringListNode *first_term = createStringListNode(keyword);
+            StringListNode *last_term = first_term;
+            keyword = strtok(NULL, " \t");
+            while (keyword != NULL && (strcmp(keyword, "-d") != 0)) {
+                last_term->next = createStringListNode(keyword);
+                last_term = last_term->next;
+                keyword = strtok(NULL, " \t");
+            }
+            if (keyword == NULL || (strcmp(keyword, "-d") != 0)) {
+                fprintf(stderr, "Invalid use of '/search': No deadline specified.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            keyword = strtok(NULL, " \t");
+            if (keyword == NULL || !isdigit(*keyword)) {
+                fprintf(stderr, "Invalid use of '/search': Invalid deadline.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            int deadline = atoi(keyword);       ///
+            StringListNode *currTerm = first_term;
+            while (currTerm != NULL) {
+                PostingList *keywordPostingList = getPostingList(trie, currTerm->string);
+                if (keywordPostingList == NULL) {     // current term doesn't exist in trie
+                    fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[0] + 1, currTerm->string);
+                    currTerm = currTerm->next;
+                    continue;
+                }
+                fprintf(logfp, "%s : %s : %s", getCurrentTime(), cmds[0] + 1, currTerm->string);
+                PostingListNode *currNode = keywordPostingList->first;
+                while (currNode != NULL) {
+                    fprintf(logfp, " : %s", docnames[currNode->id]);
+                    IntListNode *currLine = currNode->firstline;
+                    while (currLine != NULL) {
+                        printf("%s %d: %s\n", docnames[currNode->id], currLine->line, docs[currNode->id][currLine->line]);
+                        currLine = currLine->next;
+                    }
+                    currNode = currNode->next;
+                }
+                fprintf(logfp, "\n");
+                currTerm = currTerm->next;
+            }
         } else if (!strcmp(command, cmds[1])) {       // maxcount
             char *keyword = strtok(NULL, " \t");
+            if (keyword == NULL) {
+                fprintf(stderr, "Invalid use of '/maxcount' - Type '/help' to see the correct syntax.\n");
+                continue;
+            }
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
                 printf("'%s' doesn't exist in docs.\n", keyword);
@@ -264,6 +250,10 @@ int main(int argc, char *argv[]) {
             fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id]);
         } else if (!strcmp(command, cmds[2])) {       // mincount
             char *keyword = strtok(NULL, " \t");
+            if (keyword == NULL) {
+                fprintf(stderr, "Invalid use of '/mincount' - Type '/help' to see the correct syntax.\n");
+                continue;
+            }
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
                 printf("'%s' doesn't exist in docs.\n", keyword);
@@ -299,7 +289,7 @@ int main(int argc, char *argv[]) {
                     printf("Failed to run command\n");
                     return 74;
                 }
-                printf("%s\n", buffer);
+                //printf("%s\n", buffer);
                 total_chars += atoi(strtok(buffer, " \t"));
                 total_words += atoi(strtok(NULL, " \t"));
                 total_lines += atoi(strtok(NULL, " \t"));
@@ -308,7 +298,7 @@ int main(int argc, char *argv[]) {
             printf("Worker bytes: %d\n", total_chars);
             printf("Worker words: %d\n", total_words);
             printf("Worker lines: %d\n", total_lines);
-            fprintf(logfp, "%s : %s : :\n", getCurrentTime(), cmds[3] + 1);
+            fprintf(logfp, "%s : %s\n", getCurrentTime(), cmds[3] + 1);
         }        /// not here
         else if (!strcmp(command, cmds[4])) {
             printf("Available commands (use without quotes):\n");
