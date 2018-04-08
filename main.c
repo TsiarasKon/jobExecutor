@@ -59,7 +59,6 @@ int main(int argc, char *argv[]) {
     struct dirent *curr_dirent;
     doc_count = 0;
     StringListNode *curr_dirname = dirnames;
-    char full_name[PATH_MAX];
     while (curr_dirname != NULL) {
         if ((FD = opendir(curr_dirname->string)) == NULL) {
             fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
@@ -86,6 +85,7 @@ int main(int argc, char *argv[]) {
     int curr_doc = 0;
     int lines_num;
     char *word;
+    char symb_name[PATH_MAX + 1], full_name[PATH_MAX + 1];
     size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
     char *buffer = NULL, *bufferptr;
     while (curr_dirname != NULL) {
@@ -97,7 +97,11 @@ int main(int argc, char *argv[]) {
             if (!strcmp(curr_dirent->d_name, ".") || !strcmp(curr_dirent->d_name, "..")) {
                 continue;
             }
-            sprintf(full_name, "%s/%s", curr_dirname->string, curr_dirent->d_name);
+            sprintf(symb_name, "%s/%s", curr_dirname->string, curr_dirent->d_name);
+            if (realpath(symb_name, full_name) == NULL) {       // getting full file path
+                fprintf(stderr, "Error : Invalid file name - %s\n", strerror(errno));
+                return 241;
+            }
             fp = fopen(full_name, "r");
             if (fp == NULL) {
                 fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
@@ -164,7 +168,7 @@ int main(int argc, char *argv[]) {
 
     char *logfile;
     asprintf(&logfile, "%s/Worker%d", LOGPATH, getpid());
-    FILE *logfp = fopen(logfile, "w");                   /// or "a"?
+    FILE *logfp = fopen(logfile, "w");
     char *command;
     while (1) {
         printf("\n");
@@ -276,7 +280,7 @@ int main(int argc, char *argv[]) {
         } else if (!strcmp(command, cmds[3])) {       // wc
             int total_chars = 0, total_words = 0, total_lines = 0;
             FILE *pp;
-            char command_wc[PATH_MAX + 5];
+            char command_wc[PATH_MAX + 6];
             for (curr_doc = 0; curr_doc < doc_count; curr_doc++) {
                 sprintf(command_wc, "wc \"%s\"", docnames[curr_doc]);
                 pp = popen(command_wc, "r");

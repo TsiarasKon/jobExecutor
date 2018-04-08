@@ -27,8 +27,8 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3994">
-              <caret line="300" column="35" lean-forward="false" selection-start-line="300" selection-start-column="35" selection-end-line="300" selection-end-column="35" />
+            <state relative-caret-position="19">
+              <caret line="31" column="31" lean-forward="false" selection-start-line="31" selection-start-column="16" selection-end-line="31" selection-end-column="31" />
               <folding>
                 <element signature="e#45#63#0" expanded="true" />
               </folding>
@@ -108,6 +108,7 @@
       <find>fp</find>
       <find>PATH</find>
       <find>command</find>
+      <find>PATH_MAX</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -138,9 +139,9 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="801" />
+    <option name="x" value="808" />
     <option name="y" value="-4" />
-    <option name="width" value="1119" />
+    <option name="width" value="1112" />
     <option name="height" value="1084" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -216,12 +217,12 @@
       <workItem from="1523118974041" duration="2874000" />
       <workItem from="1523122318613" duration="3797000" />
       <workItem from="1523127044045" duration="1462000" />
-      <workItem from="1523212721985" duration="8396000" />
+      <workItem from="1523212721985" duration="11321000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="43681000" />
+    <option name="totallyTimeSpent" value="46606000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
@@ -617,8 +618,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3994">
-          <caret line="300" column="35" lean-forward="false" selection-start-line="300" selection-start-column="35" selection-end-line="300" selection-end-column="35" />
+        <state relative-caret-position="19">
+          <caret line="31" column="31" lean-forward="false" selection-start-line="31" selection-start-column="16" selection-end-line="31" selection-end-column="31" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>
