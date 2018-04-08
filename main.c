@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "trie.h"
-#include "doc_struct.h"
+#include "paths.h"
 #include "util.h"
 
 int interface(Trie *trie, char **docs, int *docWc);
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
                 continue;
             }
             sprintf(full_name, "%s/%s", curr_dirname->string, curr_dirent->d_name);
-            fp = fopen(full_name, "rw");
+            fp = fopen(full_name, "r");
             if (fp == NULL) {
                 fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
                 return 1;
@@ -162,8 +162,9 @@ int main(int argc, char *argv[]) {
             "/exit"
     };
 
-
-
+    char *logfile;
+    asprintf(&logfile, "%s/Worker%d", LOGPATH, getpid());
+    FILE *logfp = fopen(logfile, "w");                   /// or "a"?
     char *command;
     while (1) {
         printf("\n");
@@ -259,6 +260,8 @@ int main(int argc, char *argv[]) {
                 current = current->next;
             }
             printf("'%s' appears the most in \"%s\". //(%d times)//\n", keyword, docnames[max_id], max_tf);
+            /// TODO
+            fprintf(logfp, ":::");
         } else if (!strcmp(command, cmds[2])) {       // mincount
             char *keyword = strtok(NULL, " \t");
             PostingList *keywordPostingList = getPostingList(trie, keyword);
@@ -320,7 +323,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-
+    fclose(logfp);
     if (bufferptr != NULL) {
         free(bufferptr);
     }

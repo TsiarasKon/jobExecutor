@@ -1,7 +1,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-
 typedef struct stringlistnode StringListNode;
 struct stringlistnode {
     char *string;
@@ -16,5 +15,6 @@ struct intlistnode {
 };
 IntListNode* createIntListNode(int x);
 
+char* getCurrentTime();
 
 #endif

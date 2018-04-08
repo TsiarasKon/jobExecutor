@@ -6,8 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/doc_struct.h
-
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/interface.c
 stdio.h
 -
@@ -43,8 +41,8 @@ unistd.h
 -
 trie.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
-doc_struct.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/doc_struct.h
+paths.h
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/paths.h
 util.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
 
@@ -57,6 +55,8 @@ pairingheap.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.h
 
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.h
+
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/paths.h
 
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.c
 stdio.h
@@ -94,6 +94,10 @@ stdio.h
 stdlib.h
 -
 string.h
+-
+time.h
+-
+sys/time.h
 -
 util.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h

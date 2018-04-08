@@ -7,8 +7,8 @@ CMakeFiles/jobExecutor.dir/interface.c.o: ../postinglist.h
 CMakeFiles/jobExecutor.dir/interface.c.o: ../trie.h
 CMakeFiles/jobExecutor.dir/interface.c.o: ../util.h
 
-CMakeFiles/jobExecutor.dir/main.c.o: ../doc_struct.h
 CMakeFiles/jobExecutor.dir/main.c.o: ../main.c
+CMakeFiles/jobExecutor.dir/main.c.o: ../paths.h
 CMakeFiles/jobExecutor.dir/main.c.o: ../postinglist.h
 CMakeFiles/jobExecutor.dir/main.c.o: ../trie.h
 CMakeFiles/jobExecutor.dir/main.c.o: ../util.h
