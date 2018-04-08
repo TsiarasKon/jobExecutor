@@ -246,6 +246,7 @@ int main(int argc, char *argv[]) {
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
                 printf("'%s' doesn't exist in docs.\n", keyword);
+                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
                 continue;
             }
             PostingListNode *current = keywordPostingList->first;
@@ -259,14 +260,14 @@ int main(int argc, char *argv[]) {
                 }
                 current = current->next;
             }
-            printf("'%s' appears the most in \"%s\". //(%d times)//\n", keyword, docnames[max_id], max_tf);
-            /// TODO
-            fprintf(logfp, ":::");
+            printf("'%s' appears the most in \"%s\".\n", keyword, docnames[max_id]);
+            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id]);
         } else if (!strcmp(command, cmds[2])) {       // mincount
             char *keyword = strtok(NULL, " \t");
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
                 printf("'%s' doesn't exist in docs.\n", keyword);
+                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[2] + 1, keyword);
                 continue;
             }
             PostingListNode *current = keywordPostingList->first;
@@ -280,7 +281,8 @@ int main(int argc, char *argv[]) {
                 }
                 current = current->next;
             }
-            printf("'%s' appears the least in \"%s\". //(%d times)//\n", keyword, docnames[min_id], min_tf);
+            printf("'%s' appears the least in \"%s\".\n", keyword, docnames[min_id]);
+            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[2] + 1, keyword, docnames[min_id]);
         } else if (!strcmp(command, cmds[3])) {       // wc
             int total_chars = 0, total_words = 0, total_lines = 0;
             FILE *pp;
@@ -306,7 +308,9 @@ int main(int argc, char *argv[]) {
             printf("Worker bytes: %d\n", total_chars);
             printf("Worker words: %d\n", total_words);
             printf("Worker lines: %d\n", total_lines);
-        } else if (!strcmp(command, cmds[4])) {             /// not here
+            fprintf(logfp, "%s : %s : :\n", getCurrentTime(), cmds[3] + 1);
+        }        /// not here
+        else if (!strcmp(command, cmds[4])) {
             printf("Available commands (use without quotes):\n");
             printf(" '/search word1 word2 ... -d sec' for a list of the files that include the given words, along with the lines where they appear. Results will be printed within the seconds given as a deadline.\n");
             printf(" '/maxcount word' for the file where the given word appears the most.\n");
@@ -317,6 +321,7 @@ int main(int argc, char *argv[]) {
         } else if (!strcmp(command, cmds[5])) {       // exit
             break;
         } else {
+            /// ?
             fprintf(stderr, "Unknown command '%s': Type '/help' for a detailed list of available commands.\n", command);
         }
         buffer = bufferptr;
