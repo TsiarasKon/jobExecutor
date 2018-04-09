@@ -1,0 +1,4 @@
+./test
+	./anothertest
+./log
+ ./test2/hey

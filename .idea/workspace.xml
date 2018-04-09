@@ -12,25 +12,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5307b7c2-1bf6-403e-b438-79efefaada27" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/jobExecutor" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/job.c" afterPath="$PROJECT_DIR$/worker.c" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/test2/heyy.txt" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/main.c.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/main.c.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/worker.c.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/worker.c.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/jobExecutor" afterPath="$PROJECT_DIR$/cmake-build-debug/jobExecutor" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CMakeLists.txt" afterPath="$PROJECT_DIR$/CMakeLists.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/C.includecache" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/C.includecache" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/DependInfo.cmake" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/DependInfo.cmake" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/build.make" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/build.make" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/cmake_clean.cmake" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/cmake_clean.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/depend.internal" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/depend.internal" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/depend.make" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/depend.make" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/link.txt" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/link.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/progress.make" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/progress.make" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/jobExecutor.cbp" afterPath="$PROJECT_DIR$/cmake-build-debug/jobExecutor.cbp" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.c" afterPath="$PROJECT_DIR$/main.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pairingheap.c" afterPath="$PROJECT_DIR$/pairingheap.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/postinglist.c" afterPath="$PROJECT_DIR$/postinglist.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/trie.c" afterPath="$PROJECT_DIR$/trie.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/util.c" afterPath="$PROJECT_DIR$/util.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/util.h" afterPath="$PROJECT_DIR$/util.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/worker.c" afterPath="$PROJECT_DIR$/worker.c" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -45,8 +46,8 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="380">
-              <caret line="69" column="0" lean-forward="false" selection-start-line="69" selection-start-column="0" selection-end-line="74" selection-end-column="5" />
+            <state relative-caret-position="219">
+              <caret line="112" column="15" lean-forward="false" selection-start-line="112" selection-start-column="14" selection-end-line="112" selection-end-column="15" />
               <folding>
                 <element signature="e#45#63#0" expanded="true" />
               </folding>
@@ -57,11 +58,21 @@
       <file leaf-file-name="worker.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/worker.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="219">
-              <caret line="23" column="10" lean-forward="false" selection-start-line="23" selection-start-column="8" selection-end-line="23" selection-end-column="10" />
+            <state relative-caret-position="285">
+              <caret line="21" column="47" lean-forward="false" selection-start-line="21" selection-start-column="47" selection-end-line="21" selection-end-column="47" />
               <folding>
                 <element signature="e#45#63#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="interface.c" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/interface.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="38">
+              <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="8" selection-end-column="21" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -91,15 +102,7 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="665">
               <caret line="38" column="18" lean-forward="false" selection-start-line="38" selection-start-column="18" selection-end-line="38" selection-end-column="18" />
-              <folding>
-                <marker date="1523261526908" expanded="true" signature="131:220" ph="{...}" />
-                <marker date="1523261526908" expanded="true" signature="989:1062" ph="{...}" />
-                <marker date="1523261526908" expanded="true" signature="1093:1322" ph="{...}" />
-                <marker date="1523261526908" expanded="true" signature="1324:1535" ph="/.../" />
-                <marker date="1523261526908" expanded="true" signature="1609:2117" ph="{...}" />
-                <marker date="1523261526908" expanded="true" signature="2172:4067" ph="{...}" />
-                <marker date="1523261526908" expanded="true" signature="4121:5019" ph="{...}" />
-              </folding>
+              <folding />
             </state>
           </provider>
         </entry>
@@ -168,12 +171,12 @@
         <option value="$PROJECT_DIR$/interface.c" />
         <option value="$PROJECT_DIR$/doc_struct.h" />
         <option value="$PROJECT_DIR$/paths.h" />
-        <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/util.c" />
         <option value="$PROJECT_DIR$/pairingheap.c" />
         <option value="$PROJECT_DIR$/trie.c" />
         <option value="$PROJECT_DIR$/postinglist.c" />
         <option value="$PROJECT_DIR$/util.h" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/worker.c" />
         <option value="$PROJECT_DIR$/main.c" />
       </list>
@@ -265,12 +268,12 @@
       <workItem from="1523122318613" duration="3797000" />
       <workItem from="1523127044045" duration="1462000" />
       <workItem from="1523212721985" duration="14017000" />
-      <workItem from="1523259157306" duration="4841000" />
+      <workItem from="1523259157306" duration="9450000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="54143000" />
+    <option name="totallyTimeSpent" value="58752000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="808" y="-4" width="1857" height="1092" extended-state="6" />
@@ -281,7 +284,7 @@
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2557895" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25382933" sideWeight="0.5037807" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26789367" sideWeight="0.49621928" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32936078" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924336" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2524377" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13369273" sideWeight="0.42888403" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32842106" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -299,6 +302,16 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -332,15 +345,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2850">
           <caret line="150" column="0" lean-forward="true" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
-          <folding>
-            <marker date="1523261526908" expanded="true" signature="131:220" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="989:1062" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1093:1322" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1324:1535" ph="/.../" />
-            <marker date="1523261526908" expanded="true" signature="1609:2117" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="2172:4067" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="4121:5019" ph="{...}" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -394,15 +399,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2318">
           <caret line="122" column="13" lean-forward="false" selection-start-line="122" selection-start-column="13" selection-end-line="122" selection-end-column="13" />
-          <folding>
-            <marker date="1523261526908" expanded="true" signature="131:220" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="989:1062" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1093:1322" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1324:1535" ph="/.../" />
-            <marker date="1523261526908" expanded="true" signature="1609:2117" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="2172:4067" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="4121:5019" ph="{...}" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -469,15 +466,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2318">
           <caret line="122" column="13" lean-forward="false" selection-start-line="122" selection-start-column="13" selection-end-line="122" selection-end-column="13" />
-          <folding>
-            <marker date="1523261526908" expanded="true" signature="131:220" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="989:1062" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1093:1322" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1324:1535" ph="/.../" />
-            <marker date="1523261526908" expanded="true" signature="1609:2117" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="2172:4067" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="4121:5019" ph="{...}" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -526,15 +515,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="342">
           <caret line="18" column="25" lean-forward="false" selection-start-line="18" selection-start-column="25" selection-end-line="18" selection-end-column="25" />
-          <folding>
-            <marker date="1523261526908" expanded="true" signature="131:220" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="989:1062" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1093:1322" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1324:1535" ph="/.../" />
-            <marker date="1523261526908" expanded="true" signature="1609:2117" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="2172:4067" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="4121:5019" ph="{...}" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -604,15 +585,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="342">
           <caret line="18" column="25" lean-forward="true" selection-start-line="18" selection-start-column="25" selection-end-line="18" selection-end-column="25" />
-          <folding>
-            <marker date="1523261526908" expanded="true" signature="131:220" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="989:1062" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1093:1322" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1324:1535" ph="/.../" />
-            <marker date="1523261526908" expanded="true" signature="1609:2117" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="2172:4067" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="4121:5019" ph="{...}" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -686,66 +659,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/interface.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="475">
-          <caret line="30" column="21" lean-forward="false" selection-start-line="30" selection-start-column="21" selection-end-line="30" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="95">
-          <caret line="5" column="33" lean-forward="false" selection-start-line="5" selection-start-column="33" selection-end-line="5" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/util.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="410">
-          <caret line="28" column="18" lean-forward="false" selection-start-line="28" selection-start-column="18" selection-end-line="28" selection-end-column="18" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pairingheap.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="337">
-          <caret line="72" column="18" lean-forward="false" selection-start-line="72" selection-start-column="18" selection-end-line="72" selection-end-column="18" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/trie.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="665">
-          <caret line="38" column="18" lean-forward="false" selection-start-line="38" selection-start-column="18" selection-end-line="38" selection-end-column="18" />
-          <folding>
-            <marker date="1523261526908" expanded="true" signature="131:220" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="989:1062" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1093:1322" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="1324:1535" ph="/.../" />
-            <marker date="1523261526908" expanded="true" signature="1609:2117" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="2172:4067" ph="{...}" />
-            <marker date="1523261526908" expanded="true" signature="4121:5019" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/postinglist.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="874">
-          <caret line="49" column="18" lean-forward="false" selection-start-line="49" selection-start-column="18" selection-end-line="49" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/util.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="171">
@@ -762,10 +675,62 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/postinglist.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="874">
+          <caret line="49" column="18" lean-forward="false" selection-start-line="49" selection-start-column="18" selection-end-line="49" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trie.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="665">
+          <caret line="38" column="18" lean-forward="false" selection-start-line="38" selection-start-column="18" selection-end-line="38" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pairingheap.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="337">
+          <caret line="72" column="18" lean-forward="false" selection-start-line="72" selection-start-column="18" selection-end-line="72" selection-end-column="18" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/util.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="410">
+          <caret line="28" column="18" lean-forward="false" selection-start-line="28" selection-start-column="18" selection-end-line="28" selection-end-column="18" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/interface.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="38">
+          <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="8" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="95">
+          <caret line="5" column="33" lean-forward="false" selection-start-line="5" selection-start-column="33" selection-end-line="5" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/worker.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="219">
-          <caret line="23" column="10" lean-forward="false" selection-start-line="23" selection-start-column="8" selection-end-line="23" selection-end-column="10" />
+        <state relative-caret-position="285">
+          <caret line="21" column="47" lean-forward="false" selection-start-line="21" selection-start-column="47" selection-end-line="21" selection-end-column="47" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>
@@ -774,8 +739,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="69" column="0" lean-forward="false" selection-start-line="69" selection-start-column="0" selection-end-line="74" selection-end-column="5" />
+        <state relative-caret-position="219">
+          <caret line="112" column="15" lean-forward="false" selection-start-line="112" selection-start-column="14" selection-end-line="112" selection-end-column="15" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>

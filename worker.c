@@ -14,19 +14,18 @@
 
 int interface(Trie *trie, char **docs, int *docWc);
 
-int doc_count;
-
 int worker(int w_id) {
     int exit_code = 0;
     char fifo0[PATH_MAX], fifo1[PATH_MAX];
     sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
     sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
-    int fd0 = open(fifo0, O_RDONLY);
+    int fd0 = open(fifo0, O_RDONLY | O_NONBLOCK);
     int fd1 = 5;//open(fifo1, O_WRONLY | O_NONBLOCK);
     if (fd0 < 0 || fd1 < 0) {
         perror("Error opening pipes");
         return EC_FIFO;
     }
+int dir_count = 0;
 
     char msgbuf[BUFSIZ];
     StringListNode *dirnames = NULL;
@@ -43,12 +42,15 @@ int worker(int w_id) {
             }
             last_dirname = last_dirname->next;
         }
+
+        dir_count++;
     }
+    printf("Worker%d: Got %d dirs\n", w_id, dir_count);
 
     // First count the number of documents:
     DIR *FD;
     struct dirent *curr_dirent;
-    doc_count = 0;
+    int doc_count = 0;
     StringListNode *curr_dirname = dirnames;
     while (curr_dirname != NULL) {
         if ((FD = opendir(curr_dirname->string)) == NULL) {
@@ -62,6 +64,7 @@ int worker(int w_id) {
         }
         curr_dirname = curr_dirname->next;
     }
+    printf("Worker%d: Got %d files\n", w_id, doc_count);
 
     char *docnames[doc_count];
     int doclines[doc_count];
@@ -77,7 +80,7 @@ int worker(int w_id) {
     char *word;
     char symb_name[PATH_MAX + 1], full_name[PATH_MAX + 1];
     size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
-    char *buffer = NULL, *bufferptr;
+    char *buffer = NULL, *bufferptr = NULL;
     while (curr_dirname != NULL) {
         if ((FD = opendir(curr_dirname->string)) == NULL) {
             perror("Error opening directory");
@@ -139,13 +142,13 @@ int worker(int w_id) {
         }
         curr_dirname = curr_dirname->next;
     }
-    ///
-    for (int i = 0; i < doc_count; i++) {
-        printf("File %d: %s\n", i, docnames[i]);
-        for (int j = 0; j < doclines[i]; j++) {
-            printf(" %d %s\n", j, docs[i][j]);
-        }
-    }
+
+//    for (int i = 0; i < doc_count; i++) {
+//        printf("File %d: %s\n", i, docnames[i]);
+//        for (int j = 0; j < doclines[i]; j++) {
+//            printf(" %d %s\n", j, docs[i][j]);
+//        }
+//    }
 
 
     const char *cmds[6] = {

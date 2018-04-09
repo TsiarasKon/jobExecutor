@@ -123,33 +123,6 @@ jobExecutor/fast:
 	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/build
 .PHONY : jobExecutor/fast
 
-interface.o: interface.c.o
-
-.PHONY : interface.o
-
-# target to build an object file
-interface.c.o:
-	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/interface.c.o
-.PHONY : interface.c.o
-
-interface.i: interface.c.i
-
-.PHONY : interface.i
-
-# target to preprocess a source file
-interface.c.i:
-	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/interface.c.i
-.PHONY : interface.c.i
-
-interface.s: interface.c.s
-
-.PHONY : interface.s
-
-# target to generate assembly for a file
-interface.c.s:
-	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/interface.c.s
-.PHONY : interface.c.s
-
 main.o: main.c.o
 
 .PHONY : main.o
@@ -321,9 +294,6 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... jobExecutor"
-	@echo "... interface.o"
-	@echo "... interface.i"
-	@echo "... interface.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

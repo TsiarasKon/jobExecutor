@@ -84,9 +84,6 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/interface.c">
-			<Option target="jobExecutor"/>
-		</Unit>
 		<Unit filename="/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/main.c">
 			<Option target="jobExecutor"/>
 		</Unit>
