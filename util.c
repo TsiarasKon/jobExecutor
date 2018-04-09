@@ -6,6 +6,15 @@
 
 #include "util.h"
 
+const char *cmds[6] = {
+        "/search",
+        "/maxcount",
+        "/mincount",
+        "/wc",
+        "/help",
+        "/exit"
+};
+
 IntListNode* createIntListNode(int x) {
     IntListNode *listNode = malloc(sizeof(IntListNode));
     if (listNode == NULL) {

@@ -14,6 +14,8 @@ enum ErrorCodes {EC_OK, EC_ARG, EC_DIR, EC_FILE, EC_FORK, EC_FIFO, EC_CMD, EC_ME
  * EC_UNKNOWN: An unexpected error
 */
 
+const char *cmds[6];
+
 typedef struct stringlistnode StringListNode;
 struct stringlistnode {
     char *string;
