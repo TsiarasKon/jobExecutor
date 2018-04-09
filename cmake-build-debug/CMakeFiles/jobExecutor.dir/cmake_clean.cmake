@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/jobExecutor.dir/main.c.o"
+  "CMakeFiles/jobExecutor.dir/worker.c.o"
   "CMakeFiles/jobExecutor.dir/interface.c.o"
   "CMakeFiles/jobExecutor.dir/trie.c.o"
   "CMakeFiles/jobExecutor.dir/postinglist.c.o"

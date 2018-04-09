@@ -29,3 +29,9 @@ CMakeFiles/jobExecutor.dir/trie.c.o
 CMakeFiles/jobExecutor.dir/util.c.o
  /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.c
  /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
+CMakeFiles/jobExecutor.dir/worker.c.o
+ /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/paths.h
+ /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.h
+ /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
+ /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
+ /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/worker.c

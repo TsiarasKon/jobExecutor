@@ -114,6 +114,9 @@
 		<Unit filename="/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h">
 			<Option target="jobExecutor"/>
 		</Unit>
+		<Unit filename="/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/worker.c">
+			<Option target="jobExecutor"/>
+		</Unit>
 		<Unit filename="/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>

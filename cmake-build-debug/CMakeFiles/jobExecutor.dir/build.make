@@ -81,9 +81,33 @@ CMakeFiles/jobExecutor.dir/main.c.o.provides: CMakeFiles/jobExecutor.dir/main.c.
 CMakeFiles/jobExecutor.dir/main.c.o.provides.build: CMakeFiles/jobExecutor.dir/main.c.o
 
 
+CMakeFiles/jobExecutor.dir/worker.c.o: CMakeFiles/jobExecutor.dir/flags.make
+CMakeFiles/jobExecutor.dir/worker.c.o: ../worker.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/jobExecutor.dir/worker.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/jobExecutor.dir/worker.c.o   -c /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/worker.c
+
+CMakeFiles/jobExecutor.dir/worker.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/jobExecutor.dir/worker.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/worker.c > CMakeFiles/jobExecutor.dir/worker.c.i
+
+CMakeFiles/jobExecutor.dir/worker.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/jobExecutor.dir/worker.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/worker.c -o CMakeFiles/jobExecutor.dir/worker.c.s
+
+CMakeFiles/jobExecutor.dir/worker.c.o.requires:
+
+.PHONY : CMakeFiles/jobExecutor.dir/worker.c.o.requires
+
+CMakeFiles/jobExecutor.dir/worker.c.o.provides: CMakeFiles/jobExecutor.dir/worker.c.o.requires
+	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/worker.c.o.provides.build
+.PHONY : CMakeFiles/jobExecutor.dir/worker.c.o.provides
+
+CMakeFiles/jobExecutor.dir/worker.c.o.provides.build: CMakeFiles/jobExecutor.dir/worker.c.o
+
+
 CMakeFiles/jobExecutor.dir/interface.c.o: CMakeFiles/jobExecutor.dir/flags.make
 CMakeFiles/jobExecutor.dir/interface.c.o: ../interface.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/jobExecutor.dir/interface.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/jobExecutor.dir/interface.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/jobExecutor.dir/interface.c.o   -c /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/interface.c
 
 CMakeFiles/jobExecutor.dir/interface.c.i: cmake_force
@@ -107,7 +131,7 @@ CMakeFiles/jobExecutor.dir/interface.c.o.provides.build: CMakeFiles/jobExecutor.
 
 CMakeFiles/jobExecutor.dir/trie.c.o: CMakeFiles/jobExecutor.dir/flags.make
 CMakeFiles/jobExecutor.dir/trie.c.o: ../trie.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/jobExecutor.dir/trie.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/jobExecutor.dir/trie.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/jobExecutor.dir/trie.c.o   -c /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.c
 
 CMakeFiles/jobExecutor.dir/trie.c.i: cmake_force
@@ -131,7 +155,7 @@ CMakeFiles/jobExecutor.dir/trie.c.o.provides.build: CMakeFiles/jobExecutor.dir/t
 
 CMakeFiles/jobExecutor.dir/postinglist.c.o: CMakeFiles/jobExecutor.dir/flags.make
 CMakeFiles/jobExecutor.dir/postinglist.c.o: ../postinglist.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/jobExecutor.dir/postinglist.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/jobExecutor.dir/postinglist.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/jobExecutor.dir/postinglist.c.o   -c /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.c
 
 CMakeFiles/jobExecutor.dir/postinglist.c.i: cmake_force
@@ -155,7 +179,7 @@ CMakeFiles/jobExecutor.dir/postinglist.c.o.provides.build: CMakeFiles/jobExecuto
 
 CMakeFiles/jobExecutor.dir/pairingheap.c.o: CMakeFiles/jobExecutor.dir/flags.make
 CMakeFiles/jobExecutor.dir/pairingheap.c.o: ../pairingheap.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/jobExecutor.dir/pairingheap.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/jobExecutor.dir/pairingheap.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/jobExecutor.dir/pairingheap.c.o   -c /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.c
 
 CMakeFiles/jobExecutor.dir/pairingheap.c.i: cmake_force
@@ -179,7 +203,7 @@ CMakeFiles/jobExecutor.dir/pairingheap.c.o.provides.build: CMakeFiles/jobExecuto
 
 CMakeFiles/jobExecutor.dir/util.c.o: CMakeFiles/jobExecutor.dir/flags.make
 CMakeFiles/jobExecutor.dir/util.c.o: ../util.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/jobExecutor.dir/util.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/jobExecutor.dir/util.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/jobExecutor.dir/util.c.o   -c /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.c
 
 CMakeFiles/jobExecutor.dir/util.c.i: cmake_force
@@ -204,6 +228,7 @@ CMakeFiles/jobExecutor.dir/util.c.o.provides.build: CMakeFiles/jobExecutor.dir/u
 # Object files for target jobExecutor
 jobExecutor_OBJECTS = \
 "CMakeFiles/jobExecutor.dir/main.c.o" \
+"CMakeFiles/jobExecutor.dir/worker.c.o" \
 "CMakeFiles/jobExecutor.dir/interface.c.o" \
 "CMakeFiles/jobExecutor.dir/trie.c.o" \
 "CMakeFiles/jobExecutor.dir/postinglist.c.o" \
@@ -214,6 +239,7 @@ jobExecutor_OBJECTS = \
 jobExecutor_EXTERNAL_OBJECTS =
 
 jobExecutor: CMakeFiles/jobExecutor.dir/main.c.o
+jobExecutor: CMakeFiles/jobExecutor.dir/worker.c.o
 jobExecutor: CMakeFiles/jobExecutor.dir/interface.c.o
 jobExecutor: CMakeFiles/jobExecutor.dir/trie.c.o
 jobExecutor: CMakeFiles/jobExecutor.dir/postinglist.c.o
@@ -221,7 +247,7 @@ jobExecutor: CMakeFiles/jobExecutor.dir/pairingheap.c.o
 jobExecutor: CMakeFiles/jobExecutor.dir/util.c.o
 jobExecutor: CMakeFiles/jobExecutor.dir/build.make
 jobExecutor: CMakeFiles/jobExecutor.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking C executable jobExecutor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking C executable jobExecutor"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/jobExecutor.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -230,6 +256,7 @@ CMakeFiles/jobExecutor.dir/build: jobExecutor
 .PHONY : CMakeFiles/jobExecutor.dir/build
 
 CMakeFiles/jobExecutor.dir/requires: CMakeFiles/jobExecutor.dir/main.c.o.requires
+CMakeFiles/jobExecutor.dir/requires: CMakeFiles/jobExecutor.dir/worker.c.o.requires
 CMakeFiles/jobExecutor.dir/requires: CMakeFiles/jobExecutor.dir/interface.c.o.requires
 CMakeFiles/jobExecutor.dir/requires: CMakeFiles/jobExecutor.dir/trie.c.o.requires
 CMakeFiles/jobExecutor.dir/requires: CMakeFiles/jobExecutor.dir/postinglist.c.o.requires

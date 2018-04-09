@@ -285,6 +285,33 @@ util.c.s:
 	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/util.c.s
 .PHONY : util.c.s
 
+worker.o: worker.c.o
+
+.PHONY : worker.o
+
+# target to build an object file
+worker.c.o:
+	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/worker.c.o
+.PHONY : worker.c.o
+
+worker.i: worker.c.i
+
+.PHONY : worker.i
+
+# target to preprocess a source file
+worker.c.i:
+	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/worker.c.i
+.PHONY : worker.c.i
+
+worker.s: worker.c.s
+
+.PHONY : worker.s
+
+# target to generate assembly for a file
+worker.c.s:
+	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/worker.c.s
+.PHONY : worker.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -312,6 +339,9 @@ help:
 	@echo "... util.o"
 	@echo "... util.i"
 	@echo "... util.s"
+	@echo "... worker.o"
+	@echo "... worker.i"
+	@echo "... worker.s"
 .PHONY : help
 
 

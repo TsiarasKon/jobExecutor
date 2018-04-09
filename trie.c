@@ -6,7 +6,7 @@
 TrieNode* createTrieNode(char value, TrieNode *next) {
     TrieNode* nptr = malloc(sizeof(TrieNode));
     if (nptr == NULL) {
-        perror("Failed to allocate memory");
+        perror("malloc");
         return NULL;
     }
     nptr->value = value;
@@ -35,7 +35,7 @@ void deleteTrieNode(TrieNode **trieNode) {      // called by deleteTrie() to del
 Trie* createTrie() {
     Trie* tptr = malloc(sizeof(Trie));
     if (tptr == NULL) {
-        perror("Failed to allocate memory");
+        perror("malloc");
         return NULL;
     }
     tptr->first = NULL;

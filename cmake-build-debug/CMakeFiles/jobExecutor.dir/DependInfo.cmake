@@ -10,6 +10,7 @@ set(CMAKE_DEPENDS_CHECK_C
   "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.c" "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/postinglist.c.o"
   "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.c" "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/trie.c.o"
   "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.c" "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/util.c.o"
+  "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/worker.c" "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/worker.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

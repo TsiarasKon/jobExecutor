@@ -9,7 +9,7 @@
 IntListNode* createIntListNode(int x) {
     IntListNode *listNode = malloc(sizeof(IntListNode));
     if (listNode == NULL) {
-        perror("Failed to allocate memory");
+        perror("malloc");
         return NULL;
     }
     listNode->line = x;
@@ -20,12 +20,12 @@ IntListNode* createIntListNode(int x) {
 StringListNode* createStringListNode(char *string) {
     StringListNode *listNode = malloc(sizeof(StringListNode));
     if (listNode == NULL) {
-        perror("Failed to allocate memory");
+        perror("malloc");
         return NULL;
     }
     listNode->string = malloc(strlen(string) + 1);
     if (listNode->string == NULL) {
-        perror("Failed to allocate memory");
+        perror("malloc");
         return NULL;
     }
     strcpy(listNode->string, string);

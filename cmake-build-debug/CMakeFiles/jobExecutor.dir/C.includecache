@@ -39,6 +39,8 @@ fcntl.h
 -
 unistd.h
 -
+sys/wait.h
+-
 trie.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
 paths.h
@@ -102,5 +104,31 @@ sys/time.h
 util.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
 
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
+
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/worker.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+ctype.h
+-
+dirent.h
+-
+errno.h
+-
+linux/limits.h
+-
+fcntl.h
+-
+unistd.h
+-
+trie.h
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
+paths.h
+/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/paths.h
+util.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
 

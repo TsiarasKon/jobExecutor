@@ -8,66 +8,20 @@
 #include <linux/limits.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
 #include "trie.h"
 #include "paths.h"
 #include "util.h"
 
-int worker(int w_id);
 int interface(Trie *trie, char **docs, int *docWc);
 
-int w = 0;
 int doc_count;
 
-int main(int argc, char *argv[]) {
-    if (argc != 5) {
-        fprintf(stderr, "Invalid arguments. Please run ");       ///
-        return EC_ARG;
-    }
-    char *docfile = NULL;
-    int option;
-    while ((option = getopt(argc, argv,"d:w:")) != -1) {
-        switch (option) {
-            case 'd' :
-                docfile = malloc(strlen(optarg) + 1);
-                strcpy(docfile, optarg);
-                break;
-            case 'w' : w = atoi(optarg);
-                break;
-            default:
-                return EC_ARG;
-        }
-    }
-    if (w == 0 || docfile == NULL) {
-        fprintf(stderr, "Invalid arguments. Please run ");       ///
-        return EC_ARG;
-    }
-
+int worker(int w_id) {
     int exit_code = 0;
-    int pid;
-
     char fifo0[PATH_MAX], fifo1[PATH_MAX];
-    for(int w_id = 0; w_id < w; w_id++) {
-        sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
-        sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
-        if ((mkfifo(fifo0, 0666) == -1) || (mkfifo(fifo1, 0666) == -1)) {
-            perror("Error creating pipes");
-            return EC_FIFO;
-        }
-
-        pid = fork();
-        if (pid < 0) {
-            perror("fork");
-            return EC_FORK;
-        } else if (pid == 0) {
-            printf("Worker #%d: %d\n", w_id, getpid());
-            return worker(w_id);
-        } else {
-            wait(NULL);
-        }
-    }
-    int fd0 = open(fifo0, O_WRONLY);
+    sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
+    sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
+    int fd0 = open(fifo0, O_RDONLY);
     int fd1 = 5;//open(fifo1, O_WRONLY | O_NONBLOCK);
     if (fd0 < 0 || fd1 < 0) {
         perror("Error opening pipes");
@@ -363,5 +317,13 @@ int main(int argc, char *argv[]) {
     if (bufferptr != NULL) {
         free(bufferptr);
     }
+    deleteTrie(&trie);
+    for (int i = 0; i < doc_count; i++) {
+        for (int j = 0; j < doclines[i]; j++) {
+            free(docs[i][j]);
+        }
+        free(docs[i]);
+    }
+    printf("Worker%d has exited.\n", getpid());
     return exit_code;
 }

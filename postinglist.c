@@ -6,13 +6,13 @@
 PostingListNode *createPostingListNode(int id, int line) {
     PostingListNode *listNode = malloc(sizeof(PostingListNode));
     if (listNode == NULL) {
-        perror("Failed to allocate memory");
+        perror("malloc");
         return NULL;
     }
     listNode->id = id;
     listNode->firstline = createIntListNode(line);
     if (listNode->firstline == NULL) {
-        perror("Failed to allocate memory");
+        perror("malloc");
         return NULL;
     }
     listNode->lastline = listNode->firstline;
@@ -46,7 +46,7 @@ void deletePostingListNode(PostingListNode **listNode) {
 PostingList* createPostingList() {
     PostingList *postingList = malloc(sizeof(PostingList));
     if (postingList == NULL) {
-        perror("Failed to allocate memory");
+        perror("malloc");
         return NULL;
     }
     postingList->first = postingList->last = NULL;

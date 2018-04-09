@@ -29,3 +29,9 @@ CMakeFiles/jobExecutor.dir/trie.c.o: ../util.h
 CMakeFiles/jobExecutor.dir/util.c.o: ../util.c
 CMakeFiles/jobExecutor.dir/util.c.o: ../util.h
 
+CMakeFiles/jobExecutor.dir/worker.c.o: ../paths.h
+CMakeFiles/jobExecutor.dir/worker.c.o: ../postinglist.h
+CMakeFiles/jobExecutor.dir/worker.c.o: ../trie.h
+CMakeFiles/jobExecutor.dir/worker.c.o: ../util.h
+CMakeFiles/jobExecutor.dir/worker.c.o: ../worker.c
+
