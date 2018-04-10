@@ -68,7 +68,6 @@ int main(int argc, char *argv[]) {
 
     signal(SIGCONT, nothing_handler);
     int pids[w];
-    int fds[w][2];
     char fifo0[PATH_MAX], fifo1[PATH_MAX];
     for(int w_id = 0; w_id < w; w_id++) {
         sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
@@ -108,39 +107,42 @@ int main(int argc, char *argv[]) {
         buffer = bufferptr;
     }
     fclose(fp);
-    sleep(2);
+    sleep(1);
+    int fd0;
     char pipebuffer[BUFSIZ];
     for(int w_id = 0; w_id < w; w_id++) {
         sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
-        fds[w_id][0] = open(fifo0, O_WRONLY);
-        if (fds[w_id][0] < 0) {
+        fd0 = open(fifo0, O_WRONLY);
+        if (fd0 < 0) {
             perror("Error opening pipe");
             return EC_FIFO;
         }
         printf("jE: Opened pipe %s for writing\n", fifo0);
         for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {
             strcpy(pipebuffer, dirnames[curr_dir]);
-            if (write(fds[w_id][0], pipebuffer, BUFSIZ) == -1) {
+            if (write(fd0, pipebuffer, BUFSIZ) == -1) {
                 perror("Error writing to pipe");
                 return EC_FIFO;
             }
-            //fsync(fds[w_id][0]);
+            //fsync(fd0);
         }
-        close(fds[w_id][0]);
+        close(fd0);
     }
 
+    int fd1s[w];
     /// TODO force BUSIZ with check
-    char *command, commandcopy[BUFSIZ + 1];
+    char *command, msgbuf[BUFSIZ + 1];
     while (1) {
         printf("\n");
         // Until "/exit" is given, read current line and attempt to execute it as a command
         printf("Type a command:\n");
         getline(&buffer, &bufsize, stdin);
-        strcpy(commandcopy, buffer);
+        strcpy(msgbuf, buffer);
         bufferptr = buffer;
         strtok(buffer, "\n");     // remove trailing newline character
         command = strtok(buffer, " \t");
         if (!strcmp(command, cmds[0])) {          // search
+            char completed[w] = {0};
 //            char *keyword = strtok(NULL, " \t");
 //            if (keyword == NULL || !strcmp(keyword, "-d")) {
 //                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
@@ -241,20 +243,31 @@ int main(int argc, char *argv[]) {
 //            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[2] + 1, keyword, docnames[min_id]);
         } else if (!strcmp(command, cmds[3])) {       // wc
             for (int w_id = 0; w_id < w; w_id++) {
-                kill(pids[w_id], SIGCONT);
+                kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
-                fds[w_id][0] = open(fifo0, O_WRONLY);
-                if (fds[w_id][0] < 0) {
+                fd0 = open(fifo0, O_WRONLY);
+                if (fd0 < 0) {
                     perror("Error opening pipe");
                     return EC_FIFO;
                 }
-                printf("jE: %s", commandcopy);
-                if (write(fds[w_id][0], commandcopy, BUFSIZ) == -1) {
+                if (write(fd0, msgbuf, BUFSIZ) == -1) {
                     perror("Error writing to pipe");
                     return EC_FIFO;
                 }
-                close(fds[w_id][0]);
+                close(fd0);
             }
+            /// TODO Select or poll!
+            for (int w_id = 0; w_id < w; w_id++) {
+                printf("Waiting W%d\n", w_id);
+                sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
+                fd1s[w_id] = open(fifo1, O_RDONLY);
+                while (read(fd1s[w_id], msgbuf, BUFSIZ) > 0) {
+                    printf("From jE - %s\n", msgbuf);
+                }
+                //close(fd1s[w_id]);
+            }
+            sleep(1);
+
 //            int total_chars = 0, total_words = 0, total_lines = 0;
 //            FILE *pp;
 //            char command_wc[PATH_MAX + 6];
@@ -289,14 +302,14 @@ int main(int argc, char *argv[]) {
             printf(" '/exit' to terminate this program.\n");
         } else if (!strcmp(command, cmds[5])) {       // exit
             /// terminate all
+
+            /// wait()
             break;
         } else {
             fprintf(stderr, "Unknown command '%s': Type '/help' for a detailed list of available commands.\n", command);
         }
         buffer = bufferptr;
     }
-
-    /// wait()
 
     if (bufferptr != NULL) {
         free(bufferptr);

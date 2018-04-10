@@ -15,12 +15,15 @@
 
 //int worker_command(Trie *trie, int doc_count, int doclines[], char **docs[], char *docnames[]);
 
+/// TODO handle SIGINT
+
 int worker(int w_id) {
     int pid = getpid();
     int exit_code = EC_OK;
     char fifo0[PATH_MAX], fifo1[PATH_MAX];
     sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
     sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
+    int fd1;
     int fd0 = open(fifo0, O_RDONLY);
     if (fd0 < 0) {
         perror("Error opening pipe");
@@ -33,7 +36,6 @@ int worker(int w_id) {
     StringListNode *dirnames = NULL;
     StringListNode *last_dirname = NULL;
     while (read(fd0, msgbuf, BUFSIZ) > 0) {
-        printf(" %d read: %s\n", w_id, msgbuf);     ///
         if (dirnames == NULL) {     // only for first dir
             if ((dirnames = createStringListNode(msgbuf)) == NULL) {
                 return EC_MEM;
@@ -159,21 +161,19 @@ int worker(int w_id) {
     char *command;
     while (1) {
         pause();
-        printf("#%d got a signal!\n", w_id);    ///
+        // printf("#%d got a signal!\n", w_id);
         fd0 = open(fifo0, O_RDONLY);
         if (fd0 < 0) {
             perror("Error opening pipe");
             return EC_FIFO;
         }
-        if (read(fd0, msgbuf, BUFSIZ) < 0) {
+        if (read(fd0, msgbuf, BUFSIZ) < 0) {      // should only be one line
             perror("Error reading from pipe");
             return EC_FIFO;
         }
         close(fd0);
-        printf("Worker #%d: %s\n", w_id, msgbuf);
-        continue;
-        strtok(buffer, "\n");     // remove trailing newline character
-        command = strtok(buffer, " \t");
+        strtok(msgbuf, "\n");     // remove trailing newline character
+        command = strtok(msgbuf, " \t");
         if (!strcmp(command, cmds[0])) {          // search
 //            char *keyword = strtok(NULL, " \t");
 //            if (keyword == NULL || !strcmp(keyword, "-d")) {
@@ -274,33 +274,42 @@ int worker(int w_id) {
 //            printf("'%s' appears the least in \"%s\".\n", keyword, docnames[min_id]);
 //            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[2] + 1, keyword, docnames[min_id]);
         } else if (!strcmp(command, cmds[3])) {       // wc
-//            int total_chars = 0, total_words = 0, total_lines = 0;
-//            FILE *pp;
-//            char command_wc[PATH_MAX + 6];
-//            for (curr_doc = 0; curr_doc < doc_count; curr_doc++) {
-//                sprintf(command_wc, "wc \"%s\"", docnames[curr_doc]);
-//                pp = popen(command_wc, "r");
-//                if (pp == NULL) {
-//                    perror("Failed to run command");
-//                    return EC_CMD;
-//                }
-//                buffer = bufferptr;
-//                if (getline(&buffer, &bufsize, pp) == -1) {
-//                    perror("Failed to run command");
-//                    return EC_CMD;
-//                }
-//                //printf("%s\n", buffer);
-//                total_chars += atoi(strtok(buffer, " \t"));
-//                total_words += atoi(strtok(NULL, " \t"));
-//                total_lines += atoi(strtok(NULL, " \t"));
-//                pclose(pp);
-//            }
-//            printf("Worker bytes: %d\n", total_chars);
-//            printf("Worker words: %d\n", total_words);
-//            printf("Worker lines: %d\n", total_lines);
-//            fprintf(logfp, "%s : %s\n", getCurrentTime(), cmds[3] + 1);
+            int total_chars = 0, total_words = 0, total_lines = 0;
+            FILE *pp;
+            char command_wc[PATH_MAX + 6];
+            for (curr_doc = 0; curr_doc < doc_count; curr_doc++) {
+                sprintf(command_wc, "wc \"%s\"", docnames[curr_doc]);
+                pp = popen(command_wc, "r");
+                if (pp == NULL) {
+                    perror("Failed to run command");
+                    return EC_CMD;
+                }
+                buffer = bufferptr;
+                if (getline(&buffer, &bufsize, pp) == -1) {
+                    perror("Failed to run command");
+                    return EC_CMD;
+                }
+                //printf("%s\n", buffer);
+                total_chars += atoi(strtok(buffer, " \t"));
+                total_words += atoi(strtok(NULL, " \t"));
+                total_lines += atoi(strtok(NULL, " \t"));
+                pclose(pp);
+            }
+            sprintf(msgbuf, "Worker%d:%d %d %d", w_id, total_chars, total_words, total_lines);
+            printf(" From worker - %s\n", msgbuf);
+            fd1 = open(fifo1, O_WRONLY);
+            if (fd1 < 0) {
+                perror("Error opening pipe");
+                return EC_FIFO;
+            }
+            if (write(fd1, msgbuf, BUFSIZ) == -1) {
+                perror("Error writing to pipe");
+                return EC_FIFO;
+            }
+            close(fd1);
+            fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
         } else if (!strcmp(command, cmds[5])) {       // exit
-            /// count everything
+            /// count total strings
             /// terminate
             break;
         } else {    // shouldn't get here
@@ -310,7 +319,6 @@ int worker(int w_id) {
         }
         buffer = bufferptr;
     }
-
 
     fclose(logfp);
     if (bufferptr != NULL) {

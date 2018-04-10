@@ -12,18 +12,35 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5307b7c2-1bf6-403e-b438-79efefaada27" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/interface.c" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15012" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15013" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15014" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15082" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15083" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15084" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15136" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15137" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15138" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15568" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15569" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15570" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15946" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15947" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15948" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15989" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15990" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker15991" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker16527" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker16528" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker16529" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker16546" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker16547" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker16548" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/main.c.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/main.c.o" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/postinglist.c.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/postinglist.c.o" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/trie.c.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/trie.c.o" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/util.c.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/util.c.o" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/worker.c.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/worker.c.o" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/jobExecutor" afterPath="$PROJECT_DIR$/cmake-build-debug/jobExecutor" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/C.includecache" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/C.includecache" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.c" afterPath="$PROJECT_DIR$/main.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/util.c" afterPath="$PROJECT_DIR$/util.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/util.h" afterPath="$PROJECT_DIR$/util.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/worker.c" afterPath="$PROJECT_DIR$/worker.c" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -35,14 +52,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.42102426">
+    <splitter split-orientation="horizontal" split-proportion="0.45983827">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="267">
-                  <caret line="130" column="0" lean-forward="true" selection-start-line="130" selection-start-column="0" selection-end-line="130" selection-end-column="0" />
+                <state relative-caret-position="487">
+                  <caret line="268" column="21" lean-forward="false" selection-start-line="268" selection-start-column="21" selection-end-line="268" selection-end-column="21" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -53,8 +70,8 @@
           <file leaf-file-name="worker.c" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/worker.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3116">
-                  <caret line="166" column="9" lean-forward="false" selection-start-line="166" selection-start-column="9" selection-end-line="166" selection-end-column="9" />
+                <state relative-caret-position="3192">
+                  <caret line="168" column="9" lean-forward="false" selection-start-line="168" selection-start-column="9" selection-end-line="168" selection-end-column="9" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -133,8 +150,8 @@
           <file leaf-file-name="worker.c" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/worker.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="355">
-                  <caret line="173" column="17" lean-forward="false" selection-start-line="173" selection-start-column="17" selection-end-line="173" selection-end-column="17" />
+                <state relative-caret-position="709">
+                  <caret line="298" column="50" lean-forward="false" selection-start-line="298" selection-start-column="50" selection-end-line="298" selection-end-column="50" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -145,8 +162,8 @@
           <file leaf-file-name="main.c" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/main.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="651">
-                  <caret line="250" column="46" lean-forward="false" selection-start-line="250" selection-start-column="46" selection-end-line="250" selection-end-column="46" />
+                <state relative-caret-position="4750">
+                  <caret line="251" column="17" lean-forward="false" selection-start-line="251" selection-start-column="17" selection-end-line="251" selection-end-column="17" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -173,6 +190,8 @@
       <find>cmds</find>
       <find>write</find>
       <find>open</find>
+      <find>log</find>
+      <find>commandcopy</find>
     </findStrings>
     <replaceStrings>
       <replace>pid</replace>
@@ -196,8 +215,8 @@
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/util.c" />
         <option value="$PROJECT_DIR$/util.h" />
-        <option value="$PROJECT_DIR$/main.c" />
         <option value="$PROJECT_DIR$/worker.c" />
+        <option value="$PROJECT_DIR$/main.c" />
       </list>
     </option>
   </component>
@@ -281,12 +300,14 @@
       <workItem from="1523212721985" duration="14017000" />
       <workItem from="1523259157306" duration="15593000" />
       <workItem from="1523277173739" duration="721000" />
-      <workItem from="1523281888340" duration="9055000" />
+      <workItem from="1523281888340" duration="15304000" />
+      <workItem from="1523299265169" duration="2401000" />
+      <workItem from="1523350543006" duration="1224000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="74671000" />
+    <option name="totallyTimeSpent" value="84545000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="808" y="-4" width="1857" height="1092" extended-state="6" />
@@ -325,12 +346,38 @@
       </list>
     </option>
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="7" />
+      <option name="time" value="9" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -710,20 +757,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.c">
+    <entry file="file://$PROJECT_DIR$/worker.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="651">
-          <caret line="250" column="46" lean-forward="false" selection-start-line="250" selection-start-column="46" selection-end-line="250" selection-end-column="46" />
+        <state relative-caret-position="3192">
+          <caret line="168" column="9" lean-forward="false" selection-start-line="168" selection-start-column="9" selection-end-line="168" selection-end-column="9" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/worker.c">
+    <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="355">
-          <caret line="173" column="17" lean-forward="false" selection-start-line="173" selection-start-column="17" selection-end-line="173" selection-end-column="17" />
+        <state relative-caret-position="487">
+          <caret line="268" column="21" lean-forward="false" selection-start-line="268" selection-start-column="21" selection-end-line="268" selection-end-column="21" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>
