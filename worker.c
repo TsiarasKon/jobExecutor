@@ -23,19 +23,20 @@ int worker(int w_id) {
     char fifo0[PATH_MAX], fifo1[PATH_MAX];
     sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
     sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
-    int fd1;
+    int fd1 = open(fifo1, O_WRONLY | O_NONBLOCK);
     int fd0 = open(fifo0, O_RDONLY);
-    if (fd0 < 0) {
-        perror("Error opening pipe");
+    if (fd0 < 0 || fd1 < 0) {
+        perror("Error opening pipes");
         return EC_FIFO;
     }
-    printf("%d: Opened pipe %s for reading\n", w_id, fifo0);
-//    pause();
 
     char msgbuf[BUFSIZ];
     StringListNode *dirnames = NULL;
     StringListNode *last_dirname = NULL;
     while (read(fd0, msgbuf, BUFSIZ) > 0) {
+        if (*msgbuf == '$') {
+            break;
+        }
         if (dirnames == NULL) {     // only for first dir
             if ((dirnames = createStringListNode(msgbuf)) == NULL) {
                 return EC_MEM;
@@ -48,7 +49,6 @@ int worker(int w_id) {
             last_dirname = last_dirname->next;
         }
     }
-    close(fd0);
 
     // First count the number of documents:
     DIR *FD;
@@ -161,17 +161,11 @@ int worker(int w_id) {
     char *command;
     while (1) {
         pause();
-        // printf("#%d got a signal!\n", w_id);
-        fd0 = open(fifo0, O_RDONLY);
-        if (fd0 < 0) {
-            perror("Error opening pipe");
-            return EC_FIFO;
-        }
+         printf("#%d got a signal!\n", w_id);
         if (read(fd0, msgbuf, BUFSIZ) < 0) {      // should only be one line
             perror("Error reading from pipe");
             return EC_FIFO;
         }
-        close(fd0);
         strtok(msgbuf, "\n");     // remove trailing newline character
         command = strtok(msgbuf, " \t");
         if (!strcmp(command, cmds[0])) {          // search
@@ -297,11 +291,6 @@ int worker(int w_id) {
             }
             sprintf(msgbuf, "Worker%d:%d %d %d", w_id, total_chars, total_words, total_lines);
             printf(" From worker - %s\n", msgbuf);
-            fd1 = open(fifo1, O_WRONLY);
-            if (fd1 < 0) {
-                perror("Error opening pipe");
-                return EC_FIFO;
-            }
             if (write(fd1, msgbuf, BUFSIZ) == -1) {
                 perror("Error writing to pipe");
                 return EC_FIFO;
@@ -320,7 +309,12 @@ int worker(int w_id) {
         buffer = bufferptr;
     }
 
-    fclose(logfp);
+    if (fclose(logfp) < 0) {
+        perror("fclose");
+    }
+    if (close(fd0) < 0 || close(fd1) < 0) {
+        perror("Error opening pipes");
+    }
     if (bufferptr != NULL) {
         free(bufferptr);
     }

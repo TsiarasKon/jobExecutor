@@ -54,6 +54,20 @@ void deleteStringList(StringListNode **head) {
     *head = NULL;
 }
 
+int getArrayMax(const int arr[], int dim) {
+    if (dim == 0) {
+        return -1;
+    }
+    int curr_max = arr[0];
+    for (int i = 1; i < dim; i++) {
+        if (arr[i] > curr_max) {
+            curr_max = arr[i];
+        }
+    }
+    return curr_max;
+}
+
+
 char* getCurrentTime() {
     time_t rawtime;
     struct tm *timeinfo;

@@ -30,6 +30,7 @@ struct intlistnode {
 };
 IntListNode* createIntListNode(int x);
 
+int getArrayMax(const int arr[], int dim);
 char* getCurrentTime();
 
 #endif

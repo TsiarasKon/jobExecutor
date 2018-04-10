@@ -15,6 +15,7 @@
 #include "util.h"
 
 int worker(int w_id);
+int getNextIncomplete(const int completed[], int w);
 
 void nothing_handler(int signum) {
     // Its only purpose is to unpause the workers
@@ -46,13 +47,13 @@ int main(int argc, char *argv[]) {
     }
     int exit_code = 0;      ///
 
-    FILE *fp = fopen(docfile, "r");
-    size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
-    char *buffer = NULL, *bufferptr = NULL;
-    if (fp == NULL) {
-        perror("Failed to open file");
+    FILE *fp;
+    if ((fp = fopen(docfile, "r")) == NULL) {
+        perror("fopen");
         return EC_FILE;
     }
+    size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
+    char *buffer = NULL, *bufferptr = NULL;
     int dirs_num = 0;
     while (getline(&buffer, &bufsize, fp) != -1) {
         dirs_num++;
@@ -67,7 +68,7 @@ int main(int argc, char *argv[]) {
     }
 
     signal(SIGCONT, nothing_handler);
-    int pids[w];
+    int pids[w], fd1s[w];
     char fifo0[PATH_MAX], fifo1[PATH_MAX];
     for(int w_id = 0; w_id < w; w_id++) {
         sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
@@ -76,18 +77,27 @@ int main(int argc, char *argv[]) {
             perror("Error creating pipes");
             return EC_FIFO;
         }
+        fd1s[w_id] = open(fifo1, O_RDONLY | O_NONBLOCK);
+        if (fd1s[w_id] < 0) {
+            perror("Error opening pipe");
+            return EC_FIFO;
+        }
         pids[w_id] = fork();
         if (pids[w_id] < 0) {
             perror("fork");
             return EC_FORK;
         } else if (pids[w_id] == 0) {
             printf("Created worker #%d with pid:%d\n", w_id, getpid());
+            close(fd1s[w_id]);
             return worker(w_id);
         }
     }
 
     char *dirnames[dirs_num];
-    fp = fopen(docfile, "r");
+    if ((fp = fopen(docfile, "r")) == NULL) {
+        perror("fopen");
+        return EC_FILE;
+    }
     DIR *testdir;
     for (int curr_line = 0; curr_line < dirs_num; curr_line++) {
         if (getline(&buffer, &bufsize, fp) == -1) {
@@ -107,29 +117,33 @@ int main(int argc, char *argv[]) {
         buffer = bufferptr;
     }
     fclose(fp);
-    sleep(1);
-    int fd0;
-    char pipebuffer[BUFSIZ];
+
+    int fd0s[w];
     for(int w_id = 0; w_id < w; w_id++) {
         sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
-        fd0 = open(fifo0, O_WRONLY);
-        if (fd0 < 0) {
+        fd0s[w_id] = open(fifo0, O_WRONLY);
+        if (fd0s[w_id] < 0) {
             perror("Error opening pipe");
             return EC_FIFO;
         }
-        printf("jE: Opened pipe %s for writing\n", fifo0);
+    }
+
+    char pipebuffer[BUFSIZ];
+    for(int w_id = 0; w_id < w; w_id++) {
         for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {
             strcpy(pipebuffer, dirnames[curr_dir]);
-            if (write(fd0, pipebuffer, BUFSIZ) == -1) {
+            if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
                 perror("Error writing to pipe");
                 return EC_FIFO;
             }
-            //fsync(fd0);
         }
-        close(fd0);
+        strcpy(pipebuffer, "$");
+        if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
+            perror("Error writing to pipe");
+            return EC_FIFO;
+        }
     }
 
-    int fd1s[w];
     /// TODO force BUSIZ with check
     char *command, msgbuf[BUFSIZ + 1];
     while (1) {
@@ -142,7 +156,7 @@ int main(int argc, char *argv[]) {
         strtok(buffer, "\n");     // remove trailing newline character
         command = strtok(buffer, " \t");
         if (!strcmp(command, cmds[0])) {          // search
-            char completed[w] = {0};
+            //char completed[w] = {0};
 //            char *keyword = strtok(NULL, " \t");
 //            if (keyword == NULL || !strcmp(keyword, "-d")) {
 //                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
@@ -242,30 +256,71 @@ int main(int argc, char *argv[]) {
 //            printf("'%s' appears the least in \"%s\".\n", keyword, docnames[min_id]);
 //            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[2] + 1, keyword, docnames[min_id]);
         } else if (!strcmp(command, cmds[3])) {       // wc
+//            strcpy(pipebuffer, "halp");
+//            if (write(fd0s[0], pipebuffer, BUFSIZ) == -1) {
+//                perror("Error writing to pipe");
+//                return EC_FIFO;
+//            }
             for (int w_id = 0; w_id < w; w_id++) {
                 kill(pids[w_id], SIGCONT);      // signal workers to unpause
-                sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
-                fd0 = open(fifo0, O_WRONLY);
-                if (fd0 < 0) {
-                    perror("Error opening pipe");
-                    return EC_FIFO;
-                }
-                if (write(fd0, msgbuf, BUFSIZ) == -1) {
+                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                    printf("Failed to write\n");
                     perror("Error writing to pipe");
                     return EC_FIFO;
                 }
-                close(fd0);
             }
-            /// TODO Select or poll!
+
+            fd_set fdset;
+            FD_ZERO(&fdset);
             for (int w_id = 0; w_id < w; w_id++) {
-                printf("Waiting W%d\n", w_id);
-                sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
-                fd1s[w_id] = open(fifo1, O_RDONLY);
-                while (read(fd1s[w_id], msgbuf, BUFSIZ) > 0) {
-                    printf("From jE - %s\n", msgbuf);
-                }
-                //close(fd1s[w_id]);
+                FD_SET(fd1s[w_id], &fdset);
             }
+            int maxfd = getArrayMax(fd1s, w);
+            int completed[w];
+            for (int i = 0; i < w; i++) {
+                completed[i] = 0;
+            }
+            while (getNextIncomplete(completed, w) != -1) {
+                printf("%d\n", select(maxfd + 1, &fdset, NULL, NULL, NULL));
+                if (select(maxfd + 1, &fdset, NULL, NULL, NULL) < 0) {
+                    printf("errrrrrHere! %d\n", errno);
+                    perror("select");
+                    return EC_FIFO;
+                }
+                int w_id = getNextIncomplete(completed, w);
+                while (completed[w_id] == 0 && w_id < w) {
+                    printf("Checking #%d\n", w_id);
+                    if (FD_ISSET(fd1s[w_id], &fdset)) {   // we can read from fd1s[w_id]
+                        printf("#%d was set\n", w_id);
+                        while (read(fd1s[w_id], msgbuf, BUFSIZ) > 0) {
+                            printf("From jE - %s\n", msgbuf);
+                        }
+                        completed[w_id] = 1;
+                        FD_CLR(fd1s[w_id], &fdset);
+//                        close(fd1s[w_id]);
+                    }
+                    printf("#%d wasn't ready\n", w_id);
+                    w_id++;
+                }
+//                for (int w_id = 0; w_id < w; w_id++) {
+//                    if (FD_ISSET(fd1s[w_id], &fdset)) {   // we can read from fd1s[w_id]
+//                        while (read(fd1s[w_id], msgbuf, BUFSIZ) > 0) {
+//                            printf("From jE - %s\n", msgbuf);
+//                        }
+//                        completed[w_id] = 1;
+//                        //FD_CLR(fd1s[w_id], &fdset);
+//                        close(fd1s[w_id]);
+//                    }
+//                }
+
+//                for (int w_id = 0; w_id < w; w_id++) {
+//                    while (read(fd1s[w_id], msgbuf, BUFSIZ) > 0) {
+//                        printf("From jE - %s\n", msgbuf);
+//                    }
+//                    //close(fd1s[w_id]);
+//                }
+            }
+            printf("Finished!\n");
             sleep(1);
 
 //            int total_chars = 0, total_words = 0, total_lines = 0;
@@ -311,9 +366,23 @@ int main(int argc, char *argv[]) {
         buffer = bufferptr;
     }
 
+    for(int w_id = 0; w_id < w; w_id++) {
+        if (close(fd0s[w_id]) < 0 || close(fd1s[w_id])) {
+            perror("Error closing pipes");
+        }
+    }
     if (bufferptr != NULL) {
         free(bufferptr);
     }
     free(docfile);
     return exit_code;
+}
+
+int getNextIncomplete(const int completed[], int w) {
+    for (int i = 0; i < w; i++) {
+        if (completed[i] == 0) {
+            return i;
+        }
+    }
+    return -1;
 }
