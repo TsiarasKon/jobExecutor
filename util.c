@@ -68,7 +68,7 @@ int getArrayMax(const int arr[], int dim) {
 }
 
 
-char* getCurrentTime() {
+char* getCurrentTime(void) {
     time_t rawtime;
     struct tm *timeinfo;
 

@@ -16,6 +16,8 @@
 #include "util.h"
 
 int worker(int w_id);
+
+int makeProgramDirs(void);
 int getNextIncomplete(const int completed[], int w);
 
 void nothing_handler(int signum) {
@@ -46,7 +48,6 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Invalid arguments. Please run ");       ///
         return EC_ARG;
     }
-    int exit_code = 0;      ///
 
     FILE *fp;
     if ((fp = fopen(docfile, "r")) == NULL) {
@@ -68,6 +69,12 @@ int main(int argc, char *argv[]) {
         w = dirs_num;
     }
 
+    int exit_code;
+    if ((exit_code = makeProgramDirs()) != EC_OK) {
+        fprintf(stderr, "Unable to create folders.\n");
+        return exit_code;
+    }
+
     signal(SIGCONT, nothing_handler);
     int pids[w];
     struct pollfd pfd1s[w];
@@ -80,20 +87,23 @@ int main(int argc, char *argv[]) {
         sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
         if (((mkfifo(fifo0, 0666) == -1) || (mkfifo(fifo1, 0666) == -1)) && (errno != EEXIST)) {
             perror("Error creating pipes");
-            return EC_FIFO;
+            return EC_PIPE;
         }
         pfd1s[w_id].fd = open(fifo1, O_RDONLY | O_NONBLOCK);
         if (pfd1s[w_id].fd < 0) {
             perror("Error opening pipe");
-            return EC_FIFO;
+            return EC_PIPE;
         }
         pids[w_id] = fork();
         if (pids[w_id] < 0) {
             perror("fork");
             return EC_FORK;
         } else if (pids[w_id] == 0) {
-            printf("Created worker #%d with pid:%d\n", w_id, getpid());
-            close(pfd1s[w_id].fd);
+            printf("Created Worker%d with pid %d\n", w_id, getpid());
+            if (close(pfd1s[w_id].fd) < 0) {
+                perror("Worker failed to close pipe after forking");
+                return EC_PIPE;
+            }
             return worker(w_id);
         }
     }
@@ -129,7 +139,7 @@ int main(int argc, char *argv[]) {
         fd0s[w_id] = open(fifo0, O_WRONLY);
         if (fd0s[w_id] < 0) {
             perror("Error opening pipe");
-            return EC_FIFO;
+            return EC_PIPE;
         }
     }
 
@@ -139,13 +149,13 @@ int main(int argc, char *argv[]) {
             strcpy(pipebuffer, dirnames[curr_dir]);
             if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
                 perror("Error writing to pipe");
-                return EC_FIFO;
+                return EC_PIPE;
             }
         }
         strcpy(pipebuffer, "$");
         if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
             perror("Error writing to pipe");
-            return EC_FIFO;
+            return EC_PIPE;
         }
     }
 
@@ -265,7 +275,7 @@ int main(int argc, char *argv[]) {
                 kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
                     perror("Error writing to pipe");
-                    return EC_FIFO;
+                    return EC_PIPE;
                 }
             }
             int total_chars = 0, total_words = 0, total_lines = 0;
@@ -277,19 +287,18 @@ int main(int argc, char *argv[]) {
             while ((w_id = getNextIncomplete(completed, w)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
-                    return EC_FIFO;
+                    return EC_PIPE;
                 }
                 while (completed[w_id] == 0 && w_id < w) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
                         if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
                             perror("Error reading from pipe");
-                            return EC_FIFO;
+                            return EC_PIPE;
                         }
                         buffer = strchr(msgbuf, ':') + 1;       // ignore w_id
                         total_chars += atoi(strtok(buffer, " "));
                         total_words += atoi(strtok(NULL, " "));
                         total_lines += atoi(strtok(NULL, " "));
-                        buffer = bufferptr;
                         completed[w_id] = 1;
                     }
                     w_id++;
@@ -307,9 +316,14 @@ int main(int argc, char *argv[]) {
             printf(" '/help' for the list you're seeing right now.\n");
             printf(" '/exit' to terminate this program.\n");
         } else if (!strcmp(command, cmds[5])) {       // exit
-            /// terminate all
-
-            /// wait()
+            for (int w_id = 0; w_id < w; w_id++) {
+                kill(pids[w_id], SIGCONT);      // signal workers to unpause
+                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+            }
+            wait(NULL);
             break;
         } else {
             fprintf(stderr, "Unknown command '%s': Type '/help' for a detailed list of available commands.\n", command);
@@ -318,15 +332,35 @@ int main(int argc, char *argv[]) {
     }
 
     for(int w_id = 0; w_id < w; w_id++) {
-        if (close(fd0s[w_id]) < 0 || close(pfd1s[w_id].fd)) {
+        if (close(fd0s[w_id]) < 0 || close(pfd1s[w_id].fd) < 0) {
             perror("Error closing pipes");
         }
+        sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
+        sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
+        if (unlink(fifo0) < 0 || unlink(fifo1) < 0) {
+            perror("Error deleting pipes");
+        }
+    }
+    if (rmdir(PIPEPATH) < 0) {
+        perror("rmdir");
     }
     if (bufferptr != NULL) {
         free(bufferptr);
     }
     free(docfile);
     return exit_code;
+}
+
+int makeProgramDirs(void) {
+    if (mkdir(PIPEPATH, 0777) < 0 && errno != EEXIST) {
+        perror("mkdir");
+        return EC_DIR;
+    }
+    if (mkdir(LOGPATH, 0777) < 0 && errno != EEXIST) {
+        perror("mkdir");
+        return EC_DIR;
+    }
+    return EC_OK;
 }
 
 int getNextIncomplete(const int completed[], int w) {

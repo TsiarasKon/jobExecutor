@@ -27,7 +27,7 @@ int worker(int w_id) {
     int fd0 = open(fifo0, O_RDONLY);
     if (fd0 < 0 || fd1 < 0) {
         perror("Error opening pipes");
-        return EC_FIFO;
+        return EC_PIPE;
     }
 
     char msgbuf[BUFSIZ];
@@ -158,13 +158,16 @@ int worker(int w_id) {
     char *logfile;      /// change to [PATH_MAX + 1]
     asprintf(&logfile, "%s/Worker%d", LOGPATH, pid);
     FILE *logfp = fopen(logfile, "w");
+    if (logfp < 0) {
+        perror("fopen");
+        return EC_FILE;
+    }
     char *command;
     while (1) {
         pause();
-//        printf("#%d got a signal!\n", w_id);
         if (read(fd0, msgbuf, BUFSIZ) < 0) {      // should only be one line
             perror("Error reading from pipe");
-            return EC_FIFO;
+            return EC_PIPE;
         }
         strtok(msgbuf, "\n");     // remove trailing newline character
         command = strtok(msgbuf, " \t");
@@ -286,18 +289,16 @@ int worker(int w_id) {
                 total_chars += atoi(strtok(buffer, " \t"));
                 total_words += atoi(strtok(NULL, " \t"));
                 total_lines += atoi(strtok(NULL, " \t"));
-                buffer = bufferptr;
                 pclose(pp);
             }
             sprintf(msgbuf, "%d:%d %d %d", w_id, total_chars, total_words, total_lines);
             if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
-                return EC_FIFO;
+                return EC_PIPE;
             }
             fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
         } else if (!strcmp(command, cmds[5])) {       // exit
-            /// count total strings
-            /// terminate
+            /// count total strings?
             break;
         } else {    // shouldn't get here
             fprintf(stderr, "Illegal command '%s' arrived to Worker #%d with pid %d. The worker will now terminate.\n", command, w_id, pid);
@@ -307,14 +308,14 @@ int worker(int w_id) {
         buffer = bufferptr;
     }
 
+    if (bufferptr != NULL) {
+        free(bufferptr);
+    }
     if (fclose(logfp) < 0) {
         perror("fclose");
     }
     if (close(fd0) < 0 || close(fd1) < 0) {
         perror("Error opening pipes");
-    }
-    if (bufferptr != NULL) {
-        free(bufferptr);
     }
     deleteTrie(&trie);
     for (int i = 0; i < doc_count; i++) {
@@ -323,6 +324,6 @@ int worker(int w_id) {
         }
         free(docs[i]);
     }
-    printf("Worker%d has exited.\n", pid);      ///
+    printf("Worker%d with pid %d has exited.\n", w_id, pid);      ///
     return exit_code;
 }
