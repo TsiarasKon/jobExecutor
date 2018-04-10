@@ -221,55 +221,121 @@ int main(int argc, char *argv[]) {
 //                currTerm = currTerm->next;
 //            }
         } else if (!strcmp(command, cmds[1])) {       // maxcount
-//            char *keyword = strtok(NULL, " \t");
-//            if (keyword == NULL) {
-//                fprintf(stderr, "Invalid use of '/maxcount' - Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            PostingList *keywordPostingList = getPostingList(trie, keyword);
-//            if (keywordPostingList == NULL) {
-//                printf("'%s' doesn't exist in docs.\n", keyword);
-//                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
-//                continue;
-//            }
-//            PostingListNode *current = keywordPostingList->first;
-//            int max_id = keywordPostingList->first->id;
-//            int max_tf = keywordPostingList->first->tf;
-//            current = current->next;
-//            while (current != NULL) {
-//                if (current->tf > max_tf || (current->tf == max_tf && (strcmp(docnames[current->id], docnames[max_id]) < 0))) {
-//                    max_id = current->id;
-//                    max_tf = current->tf;
-//                }
-//                current = current->next;
-//            }
-//            printf("'%s' appears the most in \"%s\".\n", keyword, docnames[max_id]);
-//            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id]);
+            char *keyword = strtok(NULL, " \t");
+            if (keyword == NULL) {
+                fprintf(stderr, "Invalid use of '/maxcount' - Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            for (int w_id = 0; w_id < w; w_id++) {
+                kill(pids[w_id], SIGCONT);      // signal workers to unpause
+                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+            }
+            int worker_tf, curr_max_tf = -1;
+            char worker_docname[PATH_MAX + 1], curr_max_docname[PATH_MAX + 1];
+            int completed[w];
+            for (int i = 0; i < w; i++) {
+                completed[i] = 0;
+            }
+            int w_id;
+            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+                    perror("poll");
+                    return EC_PIPE;
+                }
+                while (completed[w_id] == 0 && w_id < w) {
+                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        completed[w_id] = 1;
+                        buffer = strchr(msgbuf, ':') + 1;       // ignore w_id
+                        strtok(buffer, " ");
+                        worker_tf = atoi(buffer);
+                        if (worker_tf == 0 || worker_tf < curr_max_tf) {
+                            continue;
+                        }
+                        strcpy(worker_docname, strtok(NULL, " "));
+                        if (worker_docname == NULL) {
+                            fprintf(stderr, "A worker delivered a corrupted message");
+                            return EC_UNKNOWN;
+                        }
+                        if (worker_tf == curr_max_tf && strcmp(curr_max_docname, worker_docname) < 0) {
+                            continue;
+                        }
+                        // Else the current worker has the new max:
+                        curr_max_tf = worker_tf;
+                        strcpy(curr_max_docname, worker_docname);
+                    }
+                    w_id++;
+                }
+            }
+            if (curr_max_tf == -1) {
+                printf("'%s' doesn't exist in any of the docs.\n", keyword);
+            } else {
+                printf("'%s' appears the most (%d times) in \"%s\".\n", keyword, curr_max_tf, curr_max_docname);
+            }
         } else if (!strcmp(command, cmds[2])) {       // mincount
-//            char *keyword = strtok(NULL, " \t");
-//            if (keyword == NULL) {
-//                fprintf(stderr, "Invalid use of '/mincount' - Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            PostingList *keywordPostingList = getPostingList(trie, keyword);
-//            if (keywordPostingList == NULL) {
-//                printf("'%s' doesn't exist in docs.\n", keyword);
-//                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[2] + 1, keyword);
-//                continue;
-//            }
-//            PostingListNode *current = keywordPostingList->first;
-//            int min_id = keywordPostingList->first->id;
-//            int min_tf = keywordPostingList->first->tf;
-//            current = current->next;
-//            while (current != NULL) {
-//                if (current->tf < min_tf || (current->tf == min_tf && (strcmp(docnames[current->id], docnames[min_id]) < 0))) {
-//                    min_id = current->id;
-//                    min_tf = current->tf;
-//                }
-//                current = current->next;
-//            }
-//            printf("'%s' appears the least in \"%s\".\n", keyword, docnames[min_id]);
-//            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[2] + 1, keyword, docnames[min_id]);
+            char *keyword = strtok(NULL, " \t");
+            if (keyword == NULL) {
+                fprintf(stderr, "Invalid use of '/mincount' - Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            for (int w_id = 0; w_id < w; w_id++) {
+                kill(pids[w_id], SIGCONT);      // signal workers to unpause
+                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+            }
+            int worker_tf, curr_min_tf = -1;
+            char worker_docname[PATH_MAX + 1], curr_min_docname[PATH_MAX + 1];
+            int completed[w];
+            for (int i = 0; i < w; i++) {
+                completed[i] = 0;
+            }
+            int w_id;
+            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+                    perror("poll");
+                    return EC_PIPE;
+                }
+                while (completed[w_id] == 0 && w_id < w) {
+                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        completed[w_id] = 1;
+                        buffer = strchr(msgbuf, ':') + 1;       // ignore w_id
+                        strtok(buffer, " ");
+                        worker_tf = atoi(buffer);
+                        if (worker_tf == 0 || (worker_tf > curr_min_tf && curr_min_tf != -1)) {
+                            continue;
+                        }
+                        strcpy(worker_docname, strtok(NULL, " "));
+                        if (worker_docname == NULL) {
+                            fprintf(stderr, "A worker delivered a corrupted message");
+                            return EC_UNKNOWN;
+                        }
+                        if (worker_tf == curr_min_tf && strcmp(curr_min_docname, worker_docname) < 0) {
+                            continue;
+                        }
+                        // Else the current worker has the new min:
+                        curr_min_tf = worker_tf;
+                        strcpy(curr_min_docname, worker_docname);
+                    }
+                    w_id++;
+                }
+            }
+            if (curr_min_tf == -1) {
+                printf("'%s' doesn't exist in any of the docs.\n", keyword);
+            } else {
+                printf("'%s' appears the least (%d times) in \"%s\".\n", keyword, curr_min_tf, curr_min_docname);
+            }
         } else if (!strcmp(command, cmds[3])) {       // wc
             for (int w_id = 0; w_id < w; w_id++) {
                 kill(pids[w_id], SIGCONT);      // signal workers to unpause
@@ -295,11 +361,11 @@ int main(int argc, char *argv[]) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
+                        completed[w_id] = 1;
                         buffer = strchr(msgbuf, ':') + 1;       // ignore w_id
                         total_chars += atoi(strtok(buffer, " "));
                         total_words += atoi(strtok(NULL, " "));
                         total_lines += atoi(strtok(NULL, " "));
-                        completed[w_id] = 1;
                     }
                     w_id++;
                 }
@@ -323,7 +389,9 @@ int main(int argc, char *argv[]) {
                     return EC_PIPE;
                 }
             }
-            wait(NULL);
+            for (int w_id = 0; w_id < w; w_id++) {
+                waitpid(pids[w_id], NULL, 0);
+            }
             break;
         } else {
             fprintf(stderr, "Unknown command '%s': Type '/help' for a detailed list of available commands.\n", command);

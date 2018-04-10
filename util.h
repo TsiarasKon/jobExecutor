@@ -8,7 +8,7 @@ enum ErrorCodes {EC_OK, EC_ARG, EC_DIR, EC_FILE, EC_FORK, EC_PIPE, EC_CMD, EC_ME
  * EC_DIR:     Failed to open/create directory
  * EC_FILE:    Failed to open/create text file
  * EC_FORK:    Error while forking
- * EC_PIPE:    Error related to named pipes
+ * EC_PIPE:    Error related to pipes
  * EC_CMD:     Failed to run external command
  * EC_MEM:     Failed to allocate memory
  * EC_UNKNOWN: An unexpected error

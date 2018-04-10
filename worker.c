@@ -133,7 +133,7 @@ int worker(int w_id) {
                 word = strtok(buffer, " \t");     // get first word
                 while (word != NULL) {          // for every word in doc
                     exit_code = insert(trie, word, curr_doc, curr_line);
-                    if (exit_code > 0) {
+                    if (exit_code != EC_OK) {
                         return exit_code;
                     }
                     word = strtok(NULL, " \t");
@@ -145,14 +145,15 @@ int worker(int w_id) {
         }
         curr_dirname = curr_dirname->next;
     }
-//    printf("Worker%d with pid %d has successfully loaded files.\n", w_id, pid);
 
-//    for (int i = 0; i < doc_count; i++) {
-//        printf("File %d: %s\n", i, docnames[i]);
-//        for (int j = 0; j < doclines[i]; j++) {
-//            printf(" %d %s\n", j, docs[i][j]);
-//        }
-//    }
+    // For debug purposes
+    printf("Worker%d with pid %d has successfully loaded the following files:\n", w_id, pid);
+    for (int i = 0; i < doc_count; i++) {
+        printf("  File %d: %s\n", i, docnames[i]);
+        for (int j = 0; j < doclines[i]; j++) {
+            printf("    %d %s\n", j, docs[i][j]);
+        }
+    }
 
     /// TODO sNprintf? N
     char *logfile;      /// change to [PATH_MAX + 1]
@@ -221,55 +222,71 @@ int worker(int w_id) {
 //                currTerm = currTerm->next;
 //            }
         } else if (!strcmp(command, cmds[1])) {       // maxcount
-//            char *keyword = strtok(NULL, " \t");
-//            if (keyword == NULL) {
-//                fprintf(stderr, "Invalid use of '/maxcount' - Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            PostingList *keywordPostingList = getPostingList(trie, keyword);
-//            if (keywordPostingList == NULL) {
-//                printf("'%s' doesn't exist in docs.\n", keyword);
-//                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
-//                continue;
-//            }
-//            PostingListNode *current = keywordPostingList->first;
-//            int max_id = keywordPostingList->first->id;
-//            int max_tf = keywordPostingList->first->tf;
-//            current = current->next;
-//            while (current != NULL) {
-//                if (current->tf > max_tf || (current->tf == max_tf && (strcmp(docnames[current->id], docnames[max_id]) < 0))) {
-//                    max_id = current->id;
-//                    max_tf = current->tf;
-//                }
-//                current = current->next;
-//            }
-//            printf("'%s' appears the most in \"%s\".\n", keyword, docnames[max_id]);
-//            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id]);
+            char *keyword = strtok(NULL, " \t");
+            if (keyword == NULL) {
+                exit_code = EC_UNKNOWN;
+                break;
+            }
+            PostingList *keywordPostingList = getPostingList(trie, keyword);
+            if (keywordPostingList == NULL) {
+                sprintf(msgbuf, "%d:0", w_id);
+                if (write(fd1, msgbuf, BUFSIZ) < 0) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
+                continue;
+            }
+            PostingListNode *current = keywordPostingList->first;
+            int max_id = keywordPostingList->first->id;
+            int max_tf = keywordPostingList->first->tf;
+            current = current->next;
+            while (current != NULL) {
+                if (current->tf > max_tf || (current->tf == max_tf && (strcmp(docnames[current->id], docnames[max_id]) < 0))) {
+                    max_id = current->id;
+                    max_tf = current->tf;
+                }
+                current = current->next;
+            }
+            sprintf(msgbuf, "%d:%d %s", w_id, max_tf, docnames[max_id]);
+            if (write(fd1, msgbuf, BUFSIZ) < 0) {
+                perror("Error writing to pipe");
+                return EC_PIPE;
+            }
+            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id]);
         } else if (!strcmp(command, cmds[2])) {       // mincount
-//            char *keyword = strtok(NULL, " \t");
-//            if (keyword == NULL) {
-//                fprintf(stderr, "Invalid use of '/mincount' - Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            PostingList *keywordPostingList = getPostingList(trie, keyword);
-//            if (keywordPostingList == NULL) {
-//                printf("'%s' doesn't exist in docs.\n", keyword);
-//                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[2] + 1, keyword);
-//                continue;
-//            }
-//            PostingListNode *current = keywordPostingList->first;
-//            int min_id = keywordPostingList->first->id;
-//            int min_tf = keywordPostingList->first->tf;
-//            current = current->next;
-//            while (current != NULL) {
-//                if (current->tf < min_tf || (current->tf == min_tf && (strcmp(docnames[current->id], docnames[min_id]) < 0))) {
-//                    min_id = current->id;
-//                    min_tf = current->tf;
-//                }
-//                current = current->next;
-//            }
-//            printf("'%s' appears the least in \"%s\".\n", keyword, docnames[min_id]);
-//            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[2] + 1, keyword, docnames[min_id]);
+            char *keyword = strtok(NULL, " \t");
+            if (keyword == NULL) {
+                exit_code = EC_UNKNOWN;
+                break;
+            }
+            PostingList *keywordPostingList = getPostingList(trie, keyword);
+            if (keywordPostingList == NULL) {
+                sprintf(msgbuf, "%d:0", w_id);
+                if (write(fd1, msgbuf, BUFSIZ) < 0) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
+                continue;
+            }
+            PostingListNode *current = keywordPostingList->first;
+            int min_id = keywordPostingList->first->id;
+            int min_tf = keywordPostingList->first->tf;
+            current = current->next;
+            while (current != NULL) {
+                if (current->tf < min_tf || (current->tf == min_tf && (strcmp(docnames[current->id], docnames[min_id]) < 0))) {
+                    min_id = current->id;
+                    min_tf = current->tf;
+                }
+                current = current->next;
+            }
+            sprintf(msgbuf, "%d:%d %s", w_id, min_tf, docnames[min_id]);
+            if (write(fd1, msgbuf, BUFSIZ) < 0) {
+                perror("Error writing to pipe");
+                return EC_PIPE;
+            }
+            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[min_id]);
         } else if (!strcmp(command, cmds[3])) {       // wc
             int total_chars = 0, total_words = 0, total_lines = 0;
             FILE *pp;
@@ -298,14 +315,16 @@ int worker(int w_id) {
             }
             fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
         } else if (!strcmp(command, cmds[5])) {       // exit
-            /// count total strings?
+            /// TODO count total strings found
             break;
-        } else {    // shouldn't get here
-            fprintf(stderr, "Illegal command '%s' arrived to Worker #%d with pid %d. The worker will now terminate.\n", command, w_id, pid);
+        } else {        // shouldn't ever get here
             exit_code = EC_UNKNOWN;
             break;
         }
         buffer = bufferptr;
+    }
+    if (exit_code == EC_UNKNOWN) {
+        fprintf(stderr, "Illegal command '%s' arrived to Worker%d with pid %d. The worker will now terminate.\n", command, w_id, pid);
     }
 
     if (bufferptr != NULL) {
@@ -324,6 +343,6 @@ int worker(int w_id) {
         }
         free(docs[i]);
     }
-    printf("Worker%d with pid %d has exited.\n", w_id, pid);      ///
+    printf("Worker%d with pid %d has exited.\n", w_id, pid);
     return exit_code;
 }
