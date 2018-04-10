@@ -67,7 +67,7 @@ int worker(int w_id) {
         }
         curr_dirname = curr_dirname->next;
     }
-    printf("Worker #%d docs: %d\n", w_id, doc_count);
+//    printf("Worker #%d docs: %d\n", w_id, doc_count);
 
     char *docnames[doc_count];
     int doclines[doc_count];
@@ -145,7 +145,7 @@ int worker(int w_id) {
         }
         curr_dirname = curr_dirname->next;
     }
-    printf("Worker%d with pid %d has successfully loaded files.\n", w_id, pid);
+//    printf("Worker%d with pid %d has successfully loaded files.\n", w_id, pid);
 
 //    for (int i = 0; i < doc_count; i++) {
 //        printf("File %d: %s\n", i, docnames[i]);
@@ -283,15 +283,14 @@ int worker(int w_id) {
                     perror("Failed to run command");
                     return EC_CMD;
                 }
-                //printf("%s\n", buffer);
                 total_chars += atoi(strtok(buffer, " \t"));
                 total_words += atoi(strtok(NULL, " \t"));
                 total_lines += atoi(strtok(NULL, " \t"));
+                buffer = bufferptr;
                 pclose(pp);
             }
-            sprintf(msgbuf, "Worker%d:%d %d %d", w_id, total_chars, total_words, total_lines);
-            printf(" From worker - %s\n", msgbuf);
-            if (write(fd1, msgbuf, BUFSIZ) == -1) {
+            sprintf(msgbuf, "%d:%d %d %d", w_id, total_chars, total_words, total_lines);
+            if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
                 return EC_FIFO;
             }
