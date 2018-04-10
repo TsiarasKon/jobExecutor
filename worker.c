@@ -161,7 +161,7 @@ int worker(int w_id) {
     char *command;
     while (1) {
         pause();
-         printf("#%d got a signal!\n", w_id);
+//        printf("#%d got a signal!\n", w_id);
         if (read(fd0, msgbuf, BUFSIZ) < 0) {      // should only be one line
             perror("Error reading from pipe");
             return EC_FIFO;
@@ -295,7 +295,6 @@ int worker(int w_id) {
                 perror("Error writing to pipe");
                 return EC_FIFO;
             }
-            close(fd1);
             fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
         } else if (!strcmp(command, cmds[5])) {       // exit
             /// count total strings

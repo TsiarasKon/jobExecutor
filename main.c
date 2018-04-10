@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <poll.h>
 #include "trie.h"
 #include "paths.h"
 #include "util.h"
@@ -256,52 +257,84 @@ int main(int argc, char *argv[]) {
 //            printf("'%s' appears the least in \"%s\".\n", keyword, docnames[min_id]);
 //            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[2] + 1, keyword, docnames[min_id]);
         } else if (!strcmp(command, cmds[3])) {       // wc
-//            strcpy(pipebuffer, "halp");
-//            if (write(fd0s[0], pipebuffer, BUFSIZ) == -1) {
-//                perror("Error writing to pipe");
-//                return EC_FIFO;
-//            }
             for (int w_id = 0; w_id < w; w_id++) {
                 kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
-                    printf("Failed to write\n");
                     perror("Error writing to pipe");
                     return EC_FIFO;
                 }
             }
-
-            fd_set fdset;
-            FD_ZERO(&fdset);
-            for (int w_id = 0; w_id < w; w_id++) {
-                FD_SET(fd1s[w_id], &fdset);
+            struct pollfd fds[w];
+            for (int i = 0; i < w; i++) {
+                fds[i].fd = fd1s[i];
+                fds[i].events = POLLIN;
             }
-            int maxfd = getArrayMax(fd1s, w);
+
             int completed[w];
             for (int i = 0; i < w; i++) {
                 completed[i] = 0;
             }
             while (getNextIncomplete(completed, w) != -1) {
-                printf("%d\n", select(maxfd + 1, &fdset, NULL, NULL, NULL));
-                if (select(maxfd + 1, &fdset, NULL, NULL, NULL) < 0) {
-                    printf("errrrrrHere! %d\n", errno);
-                    perror("select");
+                if (poll(fds, (nfds_t) w, -1) < 0) {
+                    perror("poll");
                     return EC_FIFO;
                 }
                 int w_id = getNextIncomplete(completed, w);
                 while (completed[w_id] == 0 && w_id < w) {
-                    printf("Checking #%d\n", w_id);
-                    if (FD_ISSET(fd1s[w_id], &fdset)) {   // we can read from fd1s[w_id]
-                        printf("#%d was set\n", w_id);
+                    if (fds[w_id].revents & POLLIN) {   // we can read from fd1s[w_id]
                         while (read(fd1s[w_id], msgbuf, BUFSIZ) > 0) {
                             printf("From jE - %s\n", msgbuf);
                         }
                         completed[w_id] = 1;
-                        FD_CLR(fd1s[w_id], &fdset);
-//                        close(fd1s[w_id]);
                     }
-                    printf("#%d wasn't ready\n", w_id);
                     w_id++;
                 }
+            }
+            printf("Finished!\n");
+
+//            for (int w_id = 0; w_id < w; w_id++) {
+//                kill(pids[w_id], SIGCONT);      // signal workers to unpause
+//                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+//                    printf("Failed to write\n");
+//                    perror("Error writing to pipe");
+//                    return EC_FIFO;
+//                }
+//            }
+//
+//            fd_set fdset;
+//            FD_ZERO(&fdset);
+//            for (int w_id = 0; w_id < w; w_id++) {
+//                FD_SET(fd1s[w_id], &fdset);
+//            }
+//            int maxfd = getArrayMax(fd1s, w);
+//            int completed[w];
+//            for (int i = 0; i < w; i++) {
+//                completed[i] = 0;
+//            }
+//            while (getNextIncomplete(completed, w) != -1) {
+//                printf("%d\n", select(maxfd + 1, &fdset, NULL, NULL, NULL));
+//                if (select(maxfd + 1, &fdset, NULL, NULL, NULL) < 0) {
+//                    printf("errrrrrHere! %d\n", errno);
+//                    perror("select");
+//                    return EC_FIFO;
+//                }
+//                int w_id = getNextIncomplete(completed, w);
+//                while (completed[w_id] == 0 && w_id < w) {
+//                    printf("Checking #%d\n", w_id);
+//                    if (FD_ISSET(fd1s[w_id], &fdset)) {   // we can read from fd1s[w_id]
+//                        printf("#%d was set\n", w_id);
+//                        while (read(fd1s[w_id], msgbuf, BUFSIZ) > 0) {
+//                            printf("From jE - %s\n", msgbuf);
+//                        }
+//                        completed[w_id] = 1;
+//                        FD_CLR(fd1s[w_id], &fdset);
+////                        close(fd1s[w_id]);
+//                    }
+//                    printf("#%d wasn't ready\n", w_id);
+//                    w_id++;
+//                }
+
+
 //                for (int w_id = 0; w_id < w; w_id++) {
 //                    if (FD_ISSET(fd1s[w_id], &fdset)) {   // we can read from fd1s[w_id]
 //                        while (read(fd1s[w_id], msgbuf, BUFSIZ) > 0) {
@@ -319,9 +352,9 @@ int main(int argc, char *argv[]) {
 //                    }
 //                    //close(fd1s[w_id]);
 //                }
-            }
-            printf("Finished!\n");
-            sleep(1);
+//            }
+//            printf("Finished!\n");
+//            sleep(1);
 
 //            int total_chars = 0, total_words = 0, total_lines = 0;
 //            FILE *pp;

@@ -29,6 +29,8 @@ sys/wait.h
 -
 sys/stat.h
 -
+poll.h
+-
 trie.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
 paths.h
