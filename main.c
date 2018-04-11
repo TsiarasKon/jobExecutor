@@ -24,6 +24,11 @@ void nothing_handler(int signum) {
     // Its only purpose is to unpause the workers
 }
 
+int timeout = 0;
+void timeout_handler(int signum) {
+    timeout = 1;
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 5) {
         fprintf(stderr, "Invalid arguments. Please run ");       ///
@@ -159,6 +164,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    signal(SIGALRM, timeout_handler);
+
     /// TODO force BUSIZ with check
     char *command, msgbuf[BUFSIZ + 1];
     while (1) {
@@ -171,6 +178,7 @@ int main(int argc, char *argv[]) {
         strtok(buffer, "\n");     // remove trailing newline character
         command = strtok(buffer, " \t");
         if (!strcmp(command, cmds[0])) {          // search
+            // TODO accept "-d" as term
             // Validating search query:
             char *keyword = strtok(NULL, " \t");
             if (keyword == NULL || !strcmp(keyword, "-d")) {
@@ -193,7 +201,11 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
                 continue;
             }
-            int deadline = atoi(keyword) * 1000;        // in ms for poll()
+            int deadline = atoi(keyword);
+            if (deadline < 0) {
+                fprintf(stderr, "Invalid use of '/search': Negative deadline.\n");
+                continue;
+            }
             // Search query is valid so we pass it to the workers:
             for (int w_id = 0; w_id < w; w_id++) {
                 kill(pids[w_id], SIGCONT);      // signal workers to unpause
@@ -204,22 +216,24 @@ int main(int argc, char *argv[]) {
             }
             int completed[w];
             StringList *worker_results[w];
-
-
             int w_id = 0;
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
-                worker_results[w_id] = NULL;
+                if ((worker_results[w_id] = createStringList()) == NULL) {
+                    return EC_MEM;
+                }
             }
-            int pol;
-            while ((w_id = getNextIncomplete(completed, w)) != -1) {
-                pol = poll(pfd1s, (nfds_t) w, deadline);
-                if (pol < 0) {
+            timeout = 0;
+            if (deadline != 0) {
+                alarm((unsigned int) deadline);
+            }
+            while ((w_id = getNextIncomplete(completed, w)) != -1 && timeout == 0) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+                    if (errno == EINTR) {       // timed out
+                        break;
+                    }
                     perror("poll");
                     return EC_PIPE;
-                }
-                if (pol == 0) {         // timed out
-                    break;
                 }
                 while (completed[w_id] == 0 && w_id < w) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
@@ -230,13 +244,17 @@ int main(int argc, char *argv[]) {
                         if (*msgbuf == '$') {
                             completed[w_id] = 1;
                         } else {
-                            buffer = strchr(msgbuf, ':') + 1;       // ignore w_id
-
+                            printf("%s\n", msgbuf);
+//                            buffer = strtok(msgbuf, ":");
+//                            printf("%d\t", atoi(buffer));
+//                            buffer = strtok(NULL, " ");
+//                            printf("%s\n", buffer);
                         }
                     }
                     w_id++;
                 }
             }
+            errno = 0;
 
 
         } else if (!strcmp(command, cmds[1])) {       // maxcount
@@ -403,6 +421,7 @@ int main(int argc, char *argv[]) {
             printf(" '/help' for the list you're seeing right now.\n");
             printf(" '/exit' to terminate this program.\n");
         } else if (!strcmp(command, cmds[5])) {       // exit
+            /// TODO exit -l
             for (int w_id = 0; w_id < w; w_id++) {
                 kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {

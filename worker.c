@@ -13,7 +13,6 @@
 #include "paths.h"
 #include "util.h"
 
-//int worker_command(Trie *trie, int doc_count, int doclines[], char **docs[], char *docnames[]);
 
 /// TODO handle SIGINT
 
@@ -150,6 +149,7 @@ int worker(int w_id) {
 //        }
 //    }
 
+    int strings_matched = 0;
     /// TODO sNprintf? N
     char *logfile;      /// change to [PATH_MAX + 1]
     asprintf(&logfile, "%s/Worker%d", LOGPATH, pid);
@@ -170,9 +170,8 @@ int worker(int w_id) {
         if (!strcmp(command, cmds[0])) {          // search
             char *keyword = strtok(NULL, " \t");
             if (keyword == NULL || !strcmp(keyword, "-d")) {
-                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
-                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-                continue;
+                exit_code = EC_UNKNOWN;
+                break;
             }
             StringList *terms = createStringList();
             if (terms == NULL) {
@@ -182,22 +181,11 @@ int worker(int w_id) {
                 return EC_MEM;
             }
             keyword = strtok(NULL, " \t");
-            while (keyword != NULL && (strcmp(keyword, "-d") != 0)) {
+            while (keyword != NULL) {
                 if (appendStringListNode(terms, keyword) != EC_OK) {
                     return EC_MEM;
                 }
                 keyword = strtok(NULL, " \t");
-            }
-            if (keyword == NULL || (strcmp(keyword, "-d") != 0)) {
-                fprintf(stderr, "Invalid use of '/search': No deadline specified.\n");
-                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-                continue;
-            }
-            keyword = strtok(NULL, " \t");
-            if (keyword == NULL || !isdigit(*keyword)) {
-                fprintf(stderr, "Invalid use of '/search': Invalid deadline.\n");
-                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-                continue;
             }
             StringListNode *currTerm = terms->first;
             while (currTerm != NULL) {
@@ -207,19 +195,30 @@ int worker(int w_id) {
                     currTerm = currTerm->next;
                     continue;
                 }
+                strings_matched++;
                 fprintf(logfp, "%s : %s : %s", getCurrentTime(), cmds[0] + 1, currTerm->string);
                 PostingListNode *currPLNode = keywordPostingList->first;
                 while (currPLNode != NULL) {
                     fprintf(logfp, " : %s", docnames[currPLNode->id]);
                     IntListNode *currLine = currPLNode->lines->first;
                     while (currLine != NULL) {
-                        printf("%s %d: %s\n", docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
+                        //if (w_id == 2) sleep(1);    ///
+                        sprintf(msgbuf, "%d:%s %d %s", w_id, docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
+                        if (write(fd1, msgbuf, BUFSIZ) < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+                            perror("Error writing to pipe");
+                            return EC_PIPE;
+                        }
                         currLine = currLine->next;
                     }
                     currPLNode = currPLNode->next;
                 }
                 fprintf(logfp, "\n");
                 currTerm = currTerm->next;
+            }
+            sprintf(msgbuf, "$");
+            if (write(fd1, msgbuf, BUFSIZ) < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+                perror("Error writing to pipe");
+                return EC_PIPE;
             }
         } else if (!strcmp(command, cmds[1])) {       // maxcount
             char *keyword = strtok(NULL, " \t");
@@ -316,6 +315,7 @@ int worker(int w_id) {
             fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
         } else if (!strcmp(command, cmds[5])) {       // exit
             /// TODO count total strings found
+            printf("Worker%d strings matched: %d\n", w_id, strings_matched);
             break;
         } else {        // shouldn't ever get here
             exit_code = EC_UNKNOWN;
