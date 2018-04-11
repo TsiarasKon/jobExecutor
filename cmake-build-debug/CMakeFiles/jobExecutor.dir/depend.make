@@ -7,9 +7,6 @@ CMakeFiles/jobExecutor.dir/main.c.o: ../postinglist.h
 CMakeFiles/jobExecutor.dir/main.c.o: ../trie.h
 CMakeFiles/jobExecutor.dir/main.c.o: ../util.h
 
-CMakeFiles/jobExecutor.dir/pairingheap.c.o: ../pairingheap.c
-CMakeFiles/jobExecutor.dir/pairingheap.c.o: ../pairingheap.h
-
 CMakeFiles/jobExecutor.dir/postinglist.c.o: ../postinglist.c
 CMakeFiles/jobExecutor.dir/postinglist.c.o: ../postinglist.h
 CMakeFiles/jobExecutor.dir/postinglist.c.o: ../trie.h

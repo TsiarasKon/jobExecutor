@@ -38,16 +38,6 @@ paths.h
 util.h
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.c
-stdio.h
--
-stdlib.h
--
-pairingheap.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.h
-
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.h
-
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/paths.h
 
 /home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.c

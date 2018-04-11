@@ -150,33 +150,6 @@ main.c.s:
 	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/main.c.s
 .PHONY : main.c.s
 
-pairingheap.o: pairingheap.c.o
-
-.PHONY : pairingheap.o
-
-# target to build an object file
-pairingheap.c.o:
-	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/pairingheap.c.o
-.PHONY : pairingheap.c.o
-
-pairingheap.i: pairingheap.c.i
-
-.PHONY : pairingheap.i
-
-# target to preprocess a source file
-pairingheap.c.i:
-	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/pairingheap.c.i
-.PHONY : pairingheap.c.i
-
-pairingheap.s: pairingheap.c.s
-
-.PHONY : pairingheap.s
-
-# target to generate assembly for a file
-pairingheap.c.s:
-	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/pairingheap.c.s
-.PHONY : pairingheap.c.s
-
 postinglist.o: postinglist.c.o
 
 .PHONY : postinglist.o
@@ -297,9 +270,6 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... pairingheap.o"
-	@echo "... pairingheap.i"
-	@echo "... pairingheap.s"
 	@echo "... postinglist.o"
 	@echo "... postinglist.i"
 	@echo "... postinglist.s"

@@ -13,8 +13,7 @@ typedef struct postinglistnode PostingListNode;
 
 struct postinglistnode {
     int id;
-    IntListNode *firstline;
-    IntListNode *lastline;
+    IntList *lines;
     int tf;
     PostingListNode *next;
 };

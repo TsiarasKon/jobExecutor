@@ -31,22 +31,16 @@ int worker(int w_id) {
     }
 
     char msgbuf[BUFSIZ];
-    StringListNode *dirnames = NULL;
-    StringListNode *last_dirname = NULL;
+    StringList *dirnames = createStringList();
+    if (dirnames == NULL) {
+        return EC_MEM;
+    }
     while (read(fd0, msgbuf, BUFSIZ) > 0) {
         if (*msgbuf == '$') {
             break;
         }
-        if (dirnames == NULL) {     // only for first dir
-            if ((dirnames = createStringListNode(msgbuf)) == NULL) {
-                return EC_MEM;
-            }
-            last_dirname = dirnames;
-        } else {
-            if ((last_dirname->next = createStringListNode(msgbuf)) == NULL) {
-                return EC_MEM;
-            }
-            last_dirname = last_dirname->next;
+        if (appendStringListNode(dirnames, msgbuf) != EC_OK) {
+            return EC_MEM;
         }
     }
 
@@ -54,7 +48,7 @@ int worker(int w_id) {
     DIR *FD;
     struct dirent *curr_dirent;
     int doc_count = 0;
-    StringListNode *curr_dirname = dirnames;
+    StringListNode *curr_dirname = dirnames->first;
     while (curr_dirname != NULL) {
         if ((FD = opendir(curr_dirname->string)) == NULL) {
             perror("Error opening directory");
@@ -77,7 +71,7 @@ int worker(int w_id) {
         return EC_MEM;
     }
     FILE *fp;
-    curr_dirname = dirnames;
+    curr_dirname = dirnames->first;
     int curr_doc = 0;
     int lines_num;
     char *word;
@@ -145,15 +139,16 @@ int worker(int w_id) {
         }
         curr_dirname = curr_dirname->next;
     }
+    destroyStringList(&dirnames);
 
     // For debug purposes
-    printf("Worker%d with pid %d has successfully loaded the following files:\n", w_id, pid);
-    for (int i = 0; i < doc_count; i++) {
-        printf("  File %d: %s\n", i, docnames[i]);
-        for (int j = 0; j < doclines[i]; j++) {
-            printf("    %d %s\n", j, docs[i][j]);
-        }
-    }
+//    printf("Worker%d with pid %d has successfully loaded the following files:\n", w_id, pid);
+//    for (int i = 0; i < doc_count; i++) {
+//        printf("  File %d: %s\n", i, docnames[i]);
+//        for (int j = 0; j < doclines[i]; j++) {
+//            printf("    %d %s\n", j, docs[i][j]);
+//        }
+//    }
 
     /// TODO sNprintf? N
     char *logfile;      /// change to [PATH_MAX + 1]
@@ -173,54 +168,59 @@ int worker(int w_id) {
         strtok(msgbuf, "\n");     // remove trailing newline character
         command = strtok(msgbuf, " \t");
         if (!strcmp(command, cmds[0])) {          // search
-//            char *keyword = strtok(NULL, " \t");
-//            if (keyword == NULL || !strcmp(keyword, "-d")) {
-//                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
-//                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            StringListNode *first_term = createStringListNode(keyword);
-//            StringListNode *last_term = first_term;
-//            keyword = strtok(NULL, " \t");
-//            while (keyword != NULL && (strcmp(keyword, "-d") != 0)) {
-//                last_term->next = createStringListNode(keyword);
-//                last_term = last_term->next;
-//                keyword = strtok(NULL, " \t");
-//            }
-//            if (keyword == NULL || (strcmp(keyword, "-d") != 0)) {
-//                fprintf(stderr, "Invalid use of '/search': No deadline specified.\n");
-//                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            keyword = strtok(NULL, " \t");
-//            if (keyword == NULL || !isdigit(*keyword)) {
-//                fprintf(stderr, "Invalid use of '/search': Invalid deadline.\n");
-//                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            int deadline = atoi(keyword);       ///
-//            StringListNode *currTerm = first_term;
-//            while (currTerm != NULL) {
-//                PostingList *keywordPostingList = getPostingList(trie, currTerm->string);
-//                if (keywordPostingList == NULL) {     // current term doesn't exist in trie
-//                    fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[0] + 1, currTerm->string);
-//                    currTerm = currTerm->next;
-//                    continue;
-//                }
-//                fprintf(logfp, "%s : %s : %s", getCurrentTime(), cmds[0] + 1, currTerm->string);
-//                PostingListNode *currNode = keywordPostingList->first;
-//                while (currNode != NULL) {
-//                    fprintf(logfp, " : %s", docnames[currNode->id]);
-//                    IntListNode *currLine = currNode->firstline;
-//                    while (currLine != NULL) {
-//                        printf("%s %d: %s\n", docnames[currNode->id], currLine->line, docs[currNode->id][currLine->line]);
-//                        currLine = currLine->next;
-//                    }
-//                    currNode = currNode->next;
-//                }
-//                fprintf(logfp, "\n");
-//                currTerm = currTerm->next;
-//            }
+            char *keyword = strtok(NULL, " \t");
+            if (keyword == NULL || !strcmp(keyword, "-d")) {
+                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            StringList *terms = createStringList();
+            if (terms == NULL) {
+                return EC_MEM;
+            }
+            if (appendStringListNode(terms, keyword) != EC_OK) {
+                return EC_MEM;
+            }
+            keyword = strtok(NULL, " \t");
+            while (keyword != NULL && (strcmp(keyword, "-d") != 0)) {
+                if (appendStringListNode(terms, keyword) != EC_OK) {
+                    return EC_MEM;
+                }
+                keyword = strtok(NULL, " \t");
+            }
+            if (keyword == NULL || (strcmp(keyword, "-d") != 0)) {
+                fprintf(stderr, "Invalid use of '/search': No deadline specified.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            keyword = strtok(NULL, " \t");
+            if (keyword == NULL || !isdigit(*keyword)) {
+                fprintf(stderr, "Invalid use of '/search': Invalid deadline.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            StringListNode *currTerm = terms->first;
+            while (currTerm != NULL) {
+                PostingList *keywordPostingList = getPostingList(trie, currTerm->string);
+                if (keywordPostingList == NULL) {     // current term doesn't exist in trie
+                    fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[0] + 1, currTerm->string);
+                    currTerm = currTerm->next;
+                    continue;
+                }
+                fprintf(logfp, "%s : %s : %s", getCurrentTime(), cmds[0] + 1, currTerm->string);
+                PostingListNode *currPLNode = keywordPostingList->first;
+                while (currPLNode != NULL) {
+                    fprintf(logfp, " : %s", docnames[currPLNode->id]);
+                    IntListNode *currLine = currPLNode->lines->first;
+                    while (currLine != NULL) {
+                        printf("%s %d: %s\n", docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
+                        currLine = currLine->next;
+                    }
+                    currPLNode = currPLNode->next;
+                }
+                fprintf(logfp, "\n");
+                currTerm = currTerm->next;
+            }
         } else if (!strcmp(command, cmds[1])) {       // maxcount
             char *keyword = strtok(NULL, " \t");
             if (keyword == NULL) {

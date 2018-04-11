@@ -10,12 +10,12 @@ PostingListNode *createPostingListNode(int id, int line) {
         return NULL;
     }
     listNode->id = id;
-    listNode->firstline = createIntListNode(line);
-    if (listNode->firstline == NULL) {
-        perror("malloc");
+    if ((listNode->lines = createIntList()) == NULL) {
         return NULL;
     }
-    listNode->lastline = listNode->firstline;
+    if ((appendIntListNode(listNode->lines, line)) != EC_OK) {
+        return NULL;
+    }
     listNode->tf = 1;
     listNode->next = NULL;
     return listNode;
@@ -28,15 +28,9 @@ void deletePostingListNode(PostingListNode **listNode) {
     }
     PostingListNode *current = *listNode;
     PostingListNode *next;
-    IntListNode *currentlinenode, *nextlinenode;
     while (current != NULL) {
-        currentlinenode = current->firstline;
-        while (currentlinenode != NULL) {       // Also delete LineList
-            nextlinenode = currentlinenode->next;
-            free(currentlinenode);
-            currentlinenode = nextlinenode;
-        }
         next = current->next;
+        destroyIntList(&current->lines);
         free(current);
         current = next;
     }
@@ -80,17 +74,13 @@ int incrementPostingList(TrieNode *node, int id, int line) {
     /* Words are inserted in order of id, so the posting list we're looking for either
      * is the last one or it doesn't exist and should be created after the last */
     if ((*PostingList)->last->id == id) {      // word belongs to last doc
-        (*PostingList)->last->lastline->next = createIntListNode(line);    // append a IntListNode
-        if ((*PostingList)->last->lastline->next == NULL) {
-            perror("Error allocating memory");
+        if ((appendIntListNode((*PostingList)->last->lines, line)) != EC_OK) {
             return EC_MEM;
         }
-        (*PostingList)->last->lastline = (*PostingList)->last->lastline->next;  // update pointer to lastline
         (*PostingList)->last->tf++;
     } else {
         (*PostingList)->last->next = createPostingListNode(id, line);
         if ((*PostingList)->last->next == NULL) {
-            perror("Error allocating memory");
             return EC_MEM;
         }
         (*PostingList)->last = (*PostingList)->last->next;

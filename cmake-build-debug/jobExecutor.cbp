@@ -87,12 +87,6 @@
 		<Unit filename="/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/main.c">
 			<Option target="jobExecutor"/>
 		</Unit>
-		<Unit filename="/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.c">
-			<Option target="jobExecutor"/>
-		</Unit>
-		<Unit filename="/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/pairingheap.h">
-			<Option target="jobExecutor"/>
-		</Unit>
 		<Unit filename="/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.c">
 			<Option target="jobExecutor"/>
 		</Unit>

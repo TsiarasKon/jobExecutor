@@ -171,55 +171,74 @@ int main(int argc, char *argv[]) {
         strtok(buffer, "\n");     // remove trailing newline character
         command = strtok(buffer, " \t");
         if (!strcmp(command, cmds[0])) {          // search
-            //char completed[w] = {0};
-//            char *keyword = strtok(NULL, " \t");
-//            if (keyword == NULL || !strcmp(keyword, "-d")) {
-//                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
-//                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            StringListNode *first_term = createStringListNode(keyword);
-//            StringListNode *last_term = first_term;
-//            keyword = strtok(NULL, " \t");
-//            while (keyword != NULL && (strcmp(keyword, "-d") != 0)) {
-//                last_term->next = createStringListNode(keyword);
-//                last_term = last_term->next;
-//                keyword = strtok(NULL, " \t");
-//            }
-//            if (keyword == NULL || (strcmp(keyword, "-d") != 0)) {
-//                fprintf(stderr, "Invalid use of '/search': No deadline specified.\n");
-//                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            keyword = strtok(NULL, " \t");
-//            if (keyword == NULL || !isdigit(*keyword)) {
-//                fprintf(stderr, "Invalid use of '/search': Invalid deadline.\n");
-//                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
-//                continue;
-//            }
-//            int deadline = atoi(keyword);       ///
-//            StringListNode *currTerm = first_term;
-//            while (currTerm != NULL) {
-//                PostingList *keywordPostingList = getPostingList(trie, currTerm->string);
-//                if (keywordPostingList == NULL) {     // current term doesn't exist in trie
-//                    fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[0] + 1, currTerm->string);
-//                    currTerm = currTerm->next;
-//                    continue;
-//                }
-//                fprintf(logfp, "%s : %s : %s", getCurrentTime(), cmds[0] + 1, currTerm->string);
-//                PostingListNode *currNode = keywordPostingList->first;
-//                while (currNode != NULL) {
-//                    fprintf(logfp, " : %s", docnames[currNode->id]);
-//                    IntListNode *currLine = currNode->firstline;
-//                    while (currLine != NULL) {
-//                        printf("%s %d: %s\n", docnames[currNode->id], currLine->line, docs[currNode->id][currLine->line]);
-//                        currLine = currLine->next;
-//                    }
-//                    currNode = currNode->next;
-//                }
-//                fprintf(logfp, "\n");
-//                currTerm = currTerm->next;
-//            }
+            // Validating search query:
+            char *keyword = strtok(NULL, " \t");
+            if (keyword == NULL || !strcmp(keyword, "-d")) {
+                fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            keyword = strtok(NULL, " \t");
+            while (keyword != NULL && (strcmp(keyword, "-d") != 0)) {
+                keyword = strtok(NULL, " \t");
+            }
+            if (keyword == NULL || (strcmp(keyword, "-d") != 0)) {
+                fprintf(stderr, "Invalid use of '/search': No deadline specified.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            keyword = strtok(NULL, " \t");
+            if (keyword == NULL || !isdigit(*keyword)) {
+                fprintf(stderr, "Invalid use of '/search': Invalid deadline.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            int deadline = atoi(keyword) * 1000;        // in ms for poll()
+            // Search query is valid so we pass it to the workers:
+            for (int w_id = 0; w_id < w; w_id++) {
+                kill(pids[w_id], SIGCONT);      // signal workers to unpause
+                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+            }
+            int completed[w];
+            StringList *worker_results[w];
+
+
+            int w_id = 0;
+            for (w_id = 0; w_id < w; w_id++) {
+                completed[w_id] = 0;
+                worker_results[w_id] = NULL;
+            }
+            int pol;
+            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+                pol = poll(pfd1s, (nfds_t) w, deadline);
+                if (pol < 0) {
+                    perror("poll");
+                    return EC_PIPE;
+                }
+                if (pol == 0) {         // timed out
+                    break;
+                }
+                while (completed[w_id] == 0 && w_id < w) {
+                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        if (*msgbuf == '$') {
+                            completed[w_id] = 1;
+                        } else {
+                            buffer = strchr(msgbuf, ':') + 1;       // ignore w_id
+
+                        }
+                    }
+                    w_id++;
+                }
+            }
+
+
         } else if (!strcmp(command, cmds[1])) {       // maxcount
             char *keyword = strtok(NULL, " \t");
             if (keyword == NULL) {
@@ -236,10 +255,10 @@ int main(int argc, char *argv[]) {
             int worker_tf, curr_max_tf = -1;
             char worker_docname[PATH_MAX + 1], curr_max_docname[PATH_MAX + 1];
             int completed[w];
-            for (int i = 0; i < w; i++) {
-                completed[i] = 0;
-            }
             int w_id;
+            for (w_id = 0; w_id < w; w_id++) {
+                completed[w_id] = 0;
+            }
             while ((w_id = getNextIncomplete(completed, w)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
@@ -294,10 +313,10 @@ int main(int argc, char *argv[]) {
             int worker_tf, curr_min_tf = -1;
             char worker_docname[PATH_MAX + 1], curr_min_docname[PATH_MAX + 1];
             int completed[w];
-            for (int i = 0; i < w; i++) {
-                completed[i] = 0;
-            }
             int w_id;
+            for (w_id = 0; w_id < w; w_id++) {
+                completed[w_id] = 0;
+            }
             while ((w_id = getNextIncomplete(completed, w)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
@@ -346,10 +365,10 @@ int main(int argc, char *argv[]) {
             }
             int total_chars = 0, total_words = 0, total_lines = 0;
             int completed[w];
-            for (int i = 0; i < w; i++) {
-                completed[i] = 0;
-            }
             int w_id;
+            for (w_id = 0; w_id < w; w_id++) {
+                completed[w_id] = 0;
+            }
             while ((w_id = getNextIncomplete(completed, w)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
@@ -375,7 +394,9 @@ int main(int argc, char *argv[]) {
             printf("Total lines: %d\n", total_lines);
         } else if (!strcmp(command, cmds[4])) {
             printf("Available commands (use without quotes):\n");
-            printf(" '/search word1 word2 ... -d sec' for a list of the files that include the given words, along with the lines where they appear. Results will be printed within the seconds given as a deadline.\n");
+            printf(" '/search word1 word2 ... -d deadline' for a list of the files that include the given words, along with the lines where they appear.\n");
+            printf("     Results will be printed within the seconds given as an integer (deadline).\n");
+            printf("     To wait for all the results without a deadline use '-d 0'.\n");
             printf(" '/maxcount word' for the file where the given word appears the most.\n");
             printf(" '/mincount word' for the file where the given word appears the least (but at least once).\n");
             printf(" '/wc' for the number of characters (bytes), words and lines of every file.\n");

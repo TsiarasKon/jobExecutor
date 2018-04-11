@@ -3,7 +3,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/jobExecutor.dir/worker.c.o"
   "CMakeFiles/jobExecutor.dir/trie.c.o"
   "CMakeFiles/jobExecutor.dir/postinglist.c.o"
-  "CMakeFiles/jobExecutor.dir/pairingheap.c.o"
   "CMakeFiles/jobExecutor.dir/util.c.o"
   "jobExecutor.pdb"
   "jobExecutor"
