@@ -17,7 +17,7 @@
 
 int worker(int w_id);
 
-int makeProgramDirs(void);
+int makeProgramDirs(int w);
 int getNextIncomplete(const int completed[], int w);
 
 void nothing_handler(int signum) {
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     }
 
     int exit_code;
-    if ((exit_code = makeProgramDirs()) != EC_OK) {
+    if ((exit_code = makeProgramDirs(w)) != EC_OK) {
         fprintf(stderr, "Unable to create folders.\n");
         return exit_code;
     }
@@ -420,8 +420,9 @@ int main(int argc, char *argv[]) {
             printf(" '/wc' for the number of characters (bytes), words and lines of every file.\n");
             printf(" '/help' for the list you're seeing right now.\n");
             printf(" '/exit' to terminate this program.\n");
+            printf(" '/exit -l' to terminate this program and also delete all log files.\n");
         } else if (!strcmp(command, cmds[5])) {       // exit
-            /// TODO exit -l
+            command = strtok(NULL, " \t");
             for (int w_id = 0; w_id < w; w_id++) {
                 kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
@@ -431,6 +432,32 @@ int main(int argc, char *argv[]) {
             }
             for (int w_id = 0; w_id < w; w_id++) {
                 waitpid(pids[w_id], NULL, 0);
+            }
+            if (command != NULL && !strcmp(command, "-l")) {
+                DIR *dirp;
+                struct dirent *curr_dirent;
+                char curr_dirname[PATH_MAX + 1], curr_filename[PATH_MAX + 1];
+                for(int w_id = 0; w_id < w; w_id++) {
+                    sprintf(curr_dirname, "%s/Worker%d", LOGPATH, w_id);
+                    if ((dirp = opendir(curr_dirname)) == NULL) {
+                        perror("Error opening log directory for deletion");
+                        continue;
+                    }
+                    while ((curr_dirent = readdir(dirp))) {
+                        if ((strcmp(curr_dirent->d_name, ".") != 0) && (strcmp(curr_dirent->d_name, "..") != 0)) {
+                            sprintf(curr_filename, "%s/%s", curr_dirname, curr_dirent->d_name);
+                            if (unlink(curr_filename) < 0) {
+                                perror("Error deleting logfile");
+                            }
+                        }
+                    }
+                    if (rmdir(curr_dirname) < 0) {
+                        perror("Error deleting log directory");
+                    }
+                }
+                if (rmdir(LOGPATH) < 0) {
+                    perror("Error deleting log directory");
+                }
             }
             break;
         } else {
@@ -459,7 +486,7 @@ int main(int argc, char *argv[]) {
     return exit_code;
 }
 
-int makeProgramDirs(void) {
+int makeProgramDirs(int w) {
     if (mkdir(PIPEPATH, 0777) < 0 && errno != EEXIST) {
         perror("mkdir");
         return EC_DIR;
@@ -467,6 +494,14 @@ int makeProgramDirs(void) {
     if (mkdir(LOGPATH, 0777) < 0 && errno != EEXIST) {
         perror("mkdir");
         return EC_DIR;
+    }
+    char worker_logdir[PATH_MAX + 1];
+    for (int w_id = 0; w_id < w; w_id++) {
+        sprintf(worker_logdir, "%s/Worker%d", LOGPATH, w_id);
+        if (mkdir(worker_logdir, 0777) < 0 && errno != EEXIST) {
+            perror("mkdir");
+            return EC_DIR;
+        }
     }
     return EC_OK;
 }

@@ -44,16 +44,16 @@ int worker(int w_id) {
     }
 
     // First count the number of documents:
-    DIR *FD;
+    DIR *dirp;
     struct dirent *curr_dirent;
     int doc_count = 0;
     StringListNode *curr_dirname = dirnames->first;
     while (curr_dirname != NULL) {
-        if ((FD = opendir(curr_dirname->string)) == NULL) {
+        if ((dirp = opendir(curr_dirname->string)) == NULL) {
             perror("Error opening directory");
             return EC_DIR;
         }
-        while ((curr_dirent = readdir(FD))) {
+        while ((curr_dirent = readdir(dirp))) {
             if ((strcmp(curr_dirent->d_name, ".") != 0) && (strcmp(curr_dirent->d_name, "..") != 0)) {
                 doc_count++;
             }
@@ -78,11 +78,11 @@ int worker(int w_id) {
     size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
     char *buffer = NULL, *bufferptr = NULL;
     while (curr_dirname != NULL) {
-        if ((FD = opendir(curr_dirname->string)) == NULL) {
+        if ((dirp = opendir(curr_dirname->string)) == NULL) {
             perror("Error opening directory");
             return EC_DIR;
         }
-        while ((curr_dirent = readdir(FD))) {
+        while ((curr_dirent = readdir(dirp))) {
             if (!strcmp(curr_dirent->d_name, ".") || !strcmp(curr_dirent->d_name, "..")) {
                 continue;
             }
@@ -152,7 +152,7 @@ int worker(int w_id) {
     int strings_matched = 0;
     /// TODO sNprintf? N
     char *logfile;      /// change to [PATH_MAX + 1]
-    asprintf(&logfile, "%s/Worker%d", LOGPATH, pid);
+    asprintf(&logfile, "%s/Worker%d/%d.log", LOGPATH, w_id, pid);
     FILE *logfp = fopen(logfile, "w");
     if (logfp < 0) {
         perror("fopen");
