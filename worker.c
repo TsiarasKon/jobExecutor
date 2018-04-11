@@ -149,7 +149,7 @@ int worker(int w_id) {
 //        }
 //    }
 
-    int strings_matched = 0;
+    int strings_found = 0;
     /// TODO sNprintf? N
     char *logfile;      /// change to [PATH_MAX + 1]
     asprintf(&logfile, "%s/Worker%d/%d.log", LOGPATH, w_id, pid);
@@ -195,7 +195,7 @@ int worker(int w_id) {
                     currTerm = currTerm->next;
                     continue;
                 }
-                strings_matched++;
+                strings_found++;
                 fprintf(logfp, "%s : %s : %s", getCurrentTime(), cmds[0] + 1, currTerm->string);
                 PostingListNode *currPLNode = keywordPostingList->first;
                 while (currPLNode != NULL) {
@@ -203,7 +203,7 @@ int worker(int w_id) {
                     IntListNode *currLine = currPLNode->lines->first;
                     while (currLine != NULL) {
                         //if (w_id == 2) sleep(1);    ///
-                        sprintf(msgbuf, "%d:%s %d %s", w_id, docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
+                        sprintf(msgbuf, "%s %d %s", docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
                         if (write(fd1, msgbuf, BUFSIZ) < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
                             perror("Error writing to pipe");
                             return EC_PIPE;
@@ -228,7 +228,7 @@ int worker(int w_id) {
             }
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
-                sprintf(msgbuf, "%d:0", w_id);
+                sprintf(msgbuf, "0");
                 if (write(fd1, msgbuf, BUFSIZ) < 0) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
@@ -247,7 +247,7 @@ int worker(int w_id) {
                 }
                 current = current->next;
             }
-            sprintf(msgbuf, "%d:%d %s", w_id, max_tf, docnames[max_id]);
+            sprintf(msgbuf, "%d %s", max_tf, docnames[max_id]);
             if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
@@ -261,7 +261,7 @@ int worker(int w_id) {
             }
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
-                sprintf(msgbuf, "%d:0", w_id);
+                sprintf(msgbuf, "0");
                 if (write(fd1, msgbuf, BUFSIZ) < 0) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
@@ -280,7 +280,7 @@ int worker(int w_id) {
                 }
                 current = current->next;
             }
-            sprintf(msgbuf, "%d:%d %s", w_id, min_tf, docnames[min_id]);
+            sprintf(msgbuf, "%d %s", min_tf, docnames[min_id]);
             if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
@@ -307,15 +307,18 @@ int worker(int w_id) {
                 total_lines += atoi(strtok(NULL, " \t"));
                 pclose(pp);
             }
-            sprintf(msgbuf, "%d:%d %d %d", w_id, total_chars, total_words, total_lines);
+            sprintf(msgbuf, "%d %d %d", total_chars, total_words, total_lines);
             if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
             fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
         } else if (!strcmp(command, cmds[5])) {       // exit
-            /// TODO count total strings found
-            printf("Worker%d strings matched: %d\n", w_id, strings_matched);
+            sprintf(msgbuf, "%d", strings_found);
+            if (write(fd1, msgbuf, BUFSIZ) < 0) {
+                perror("Error writing to pipe");
+                return EC_PIPE;
+            }
             break;
         } else {        // shouldn't ever get here
             exit_code = EC_UNKNOWN;

@@ -90,6 +90,7 @@ int main(int argc, char *argv[]) {
     for(int w_id = 0; w_id < w; w_id++) {
         sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
         sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
+        /// TODO clear pipes after interrupt
         if (((mkfifo(fifo0, 0666) == -1) || (mkfifo(fifo1, 0666) == -1)) && (errno != EEXIST)) {
             perror("Error creating pipes");
             return EC_PIPE;
@@ -245,8 +246,7 @@ int main(int argc, char *argv[]) {
                             completed[w_id] = 1;
                         } else {
                             printf("%s\n", msgbuf);
-//                            buffer = strtok(msgbuf, ":");
-//                            printf("%d\t", atoi(buffer));
+//                            buffer = strtok(msgbuf, " ");
 //                            buffer = strtok(NULL, " ");
 //                            printf("%s\n", buffer);
                         }
@@ -289,8 +289,7 @@ int main(int argc, char *argv[]) {
                             return EC_PIPE;
                         }
                         completed[w_id] = 1;
-                        buffer = strchr(msgbuf, ':') + 1;       // ignore w_id
-                        strtok(buffer, " ");
+                        buffer = strtok(msgbuf, " ");
                         worker_tf = atoi(buffer);
                         if (worker_tf == 0 || worker_tf < curr_max_tf) {
                             continue;
@@ -347,8 +346,7 @@ int main(int argc, char *argv[]) {
                             return EC_PIPE;
                         }
                         completed[w_id] = 1;
-                        buffer = strchr(msgbuf, ':') + 1;       // ignore w_id
-                        strtok(buffer, " ");
+                        buffer = strtok(msgbuf, " ");
                         worker_tf = atoi(buffer);
                         if (worker_tf == 0 || (worker_tf > curr_min_tf && curr_min_tf != -1)) {
                             continue;
@@ -399,8 +397,7 @@ int main(int argc, char *argv[]) {
                             return EC_PIPE;
                         }
                         completed[w_id] = 1;
-                        buffer = strchr(msgbuf, ':') + 1;       // ignore w_id
-                        total_chars += atoi(strtok(buffer, " "));
+                        total_chars += atoi(strtok(msgbuf, " "));
                         total_words += atoi(strtok(NULL, " "));
                         total_lines += atoi(strtok(NULL, " "));
                     }
@@ -413,8 +410,8 @@ int main(int argc, char *argv[]) {
         } else if (!strcmp(command, cmds[4])) {
             printf("Available commands (use without quotes):\n");
             printf(" '/search word1 word2 ... -d deadline' for a list of the files that include the given words, along with the lines where they appear.\n");
-            printf("     Results will be printed within the seconds given as an integer (deadline).\n");
-            printf("     To wait for all the results without a deadline use '-d 0'.\n");
+            printf("    Results will be printed within the seconds given as an integer (deadline).\n");
+            printf("    To wait for all the results without a deadline use '-d 0'.\n");
             printf(" '/maxcount word' for the file where the given word appears the most.\n");
             printf(" '/mincount word' for the file where the given word appears the least (but at least once).\n");
             printf(" '/wc' for the number of characters (bytes), words and lines of every file.\n");
@@ -430,14 +427,37 @@ int main(int argc, char *argv[]) {
                     return EC_PIPE;
                 }
             }
-            for (int w_id = 0; w_id < w; w_id++) {
+            int completed[w];
+            int w_id;
+            for (w_id = 0; w_id < w; w_id++) {
+                completed[w_id] = 0;
+            }
+            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+                    perror("poll");
+                    return EC_PIPE;
+                }
+                while (completed[w_id] == 0 && w_id < w) {
+                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        completed[w_id] = 1;
+                        printf("Worker%d found %d search strings.\n", w_id, atoi(msgbuf));
+                    }
+                    w_id++;
+                }
+            }
+            for (w_id = 0; w_id < w; w_id++) {
                 waitpid(pids[w_id], NULL, 0);
             }
+            // Deleting logs, if "-l" was specified:
             if (command != NULL && !strcmp(command, "-l")) {
                 DIR *dirp;
                 struct dirent *curr_dirent;
                 char curr_dirname[PATH_MAX + 1], curr_filename[PATH_MAX + 1];
-                for(int w_id = 0; w_id < w; w_id++) {
+                for(w_id = 0; w_id < w; w_id++) {
                     sprintf(curr_dirname, "%s/Worker%d", LOGPATH, w_id);
                     if ((dirp = opendir(curr_dirname)) == NULL) {
                         perror("Error opening log directory for deletion");
