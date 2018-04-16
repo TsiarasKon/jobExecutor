@@ -61,6 +61,7 @@ int worker(int w_id) {
     }
 //    printf("Worker #%d docs: %d\n", w_id, doc_count);
 
+    int total_chars = 0, total_words = 0, total_lines = 0;
     char *docnames[doc_count];
     int doclines[doc_count];
     char **docs[doc_count];
@@ -101,6 +102,7 @@ int worker(int w_id) {
             while (getline(&buffer, &bufsize, fp) != -1) {
                 lines_num++;
             }
+            total_lines += lines_num;
             doclines[curr_doc] = lines_num;
             docs[curr_doc] = malloc(lines_num * sizeof(char *));
             if (docs[curr_doc] == NULL) {
@@ -108,6 +110,7 @@ int worker(int w_id) {
                 return EC_MEM;
             }
             rewind(fp);     // start again from the beginning of docfile
+            int line_len;
             for (int curr_line = 0; curr_line < lines_num; curr_line++) {
                 if (getline(&buffer, &bufsize, fp) == -1) {
                     perror("Error");
@@ -115,7 +118,9 @@ int worker(int w_id) {
                 }
                 bufferptr = buffer;
                 strtok(buffer, "\n");
-                docs[curr_doc][curr_line] = malloc(strlen(buffer) + 1);
+                line_len = (int) strlen(buffer);
+                docs[curr_doc][curr_line] = malloc((size_t) line_len + 1);
+                total_chars += line_len;
                 if (docs[curr_doc][curr_line] == NULL) {
                     perror("malloc");
                     return EC_MEM;
@@ -124,6 +129,7 @@ int worker(int w_id) {
                 // insert line's words to trie
                 word = strtok(buffer, " \t");     // get first word
                 while (word != NULL) {          // for every word in doc
+                    total_words += 1;
                     exit_code = insert(trie, word, curr_doc, curr_line);
                     if (exit_code != EC_OK) {
                         return exit_code;
@@ -139,14 +145,15 @@ int worker(int w_id) {
     }
     destroyStringList(&dirnames);
 
-    // For debug purposes
-//    printf("Worker%d with pid %d has successfully loaded the following files:\n", w_id, pid);
-//    for (int i = 0; i < doc_count; i++) {
-//        printf("  File %d: %s\n", i, docnames[i]);
-//        for (int j = 0; j < doclines[i]; j++) {
-//            printf("    %d %s\n", j, docs[i][j]);
-//        }
-//    }
+    /* For debug purposes
+    printf("Worker%d with pid %d has successfully loaded the following files:\n", w_id, pid);
+    for (int i = 0; i < doc_count; i++) {
+        printf("  File %d: %s\n", i, docnames[i]);
+        for (int j = 0; j < doclines[i]; j++) {
+            printf("    %d %s\n", j, docs[i][j]);
+        }
+    }
+    */
 
     int strings_found = 0;
     char logfile[PATH_MAX + 1];
@@ -284,26 +291,6 @@ int worker(int w_id) {
                 return EC_PIPE;
             }
         } else if (!strcmp(command, cmds[3])) {       // wc
-            int total_chars = 0, total_words = 0, total_lines = 0;
-            FILE *pp;
-            char command_wc[PATH_MAX + 6];
-            for (curr_doc = 0; curr_doc < doc_count; curr_doc++) {
-                sprintf(command_wc, "wc \"%s\"", docnames[curr_doc]);
-                pp = popen(command_wc, "r");
-                if (pp == NULL) {
-                    perror("Failed to run command");
-                    return EC_CMD;
-                }
-                buffer = bufferptr;
-                if (getline(&buffer, &bufsize, pp) == -1) {
-                    perror("Failed to run command");
-                    return EC_CMD;
-                }
-                total_chars += atoi(strtok(buffer, " \t"));
-                total_words += atoi(strtok(NULL, " \t"));
-                total_lines += atoi(strtok(NULL, " \t"));
-                pclose(pp);
-            }
             sprintf(msgbuf, "%d %d %d", total_chars, total_words, total_lines);
             if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
