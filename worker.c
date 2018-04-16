@@ -5,7 +5,6 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
-#include <linux/limits.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
@@ -150,9 +149,8 @@ int worker(int w_id) {
 //    }
 
     int strings_found = 0;
-    /// TODO sNprintf? N
-    char *logfile;      /// change to [PATH_MAX + 1]
-    asprintf(&logfile, "%s/Worker%d/%d.log", LOGPATH, w_id, pid);
+    char logfile[PATH_MAX + 1];
+    sprintf(logfile, "%s/Worker%d/%d.log", LOGPATH, w_id, pid);
     FILE *logfp = fopen(logfile, "w");
     if (logfp < 0) {
         perror("fopen");
@@ -160,7 +158,6 @@ int worker(int w_id) {
     }
     char *command;
     while (1) {
-        pause();
         if (read(fd0, msgbuf, BUFSIZ) < 0) {      // should only be one line
             perror("Error reading from pipe");
             return EC_PIPE;
@@ -228,12 +225,12 @@ int worker(int w_id) {
             }
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
+                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
                 sprintf(msgbuf, "0");
                 if (write(fd1, msgbuf, BUFSIZ) < 0) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
                 }
-                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
                 continue;
             }
             PostingListNode *current = keywordPostingList->first;
@@ -247,12 +244,12 @@ int worker(int w_id) {
                 }
                 current = current->next;
             }
+            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id]);
             sprintf(msgbuf, "%d %s", max_tf, docnames[max_id]);
             if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
-            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id]);
         } else if (!strcmp(command, cmds[2])) {       // mincount
             char *keyword = strtok(NULL, " \t");
             if (keyword == NULL) {
@@ -261,12 +258,12 @@ int worker(int w_id) {
             }
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
+                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
                 sprintf(msgbuf, "0");
                 if (write(fd1, msgbuf, BUFSIZ) < 0) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
                 }
-                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
                 continue;
             }
             PostingListNode *current = keywordPostingList->first;
@@ -280,12 +277,12 @@ int worker(int w_id) {
                 }
                 current = current->next;
             }
+            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[min_id]);
             sprintf(msgbuf, "%d %s", min_tf, docnames[min_id]);
             if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
-            fprintf(logfp, "%s : %s : %s : %s\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[min_id]);
         } else if (!strcmp(command, cmds[3])) {       // wc
             int total_chars = 0, total_words = 0, total_lines = 0;
             FILE *pp;

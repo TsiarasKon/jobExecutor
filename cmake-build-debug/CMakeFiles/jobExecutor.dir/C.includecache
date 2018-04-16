@@ -99,8 +99,6 @@ dirent.h
 -
 errno.h
 -
-linux/limits.h
--
 fcntl.h
 -
 unistd.h
