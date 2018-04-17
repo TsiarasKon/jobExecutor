@@ -31,6 +31,7 @@ struct stringlist {
 };
 StringList* createStringList();
 int appendStringListNode(StringList *list, char *string);
+int existsInStringList(StringList *list, char *string);
 void destroyStringList(StringList **list);
 
 

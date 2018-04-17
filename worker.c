@@ -16,7 +16,7 @@
 /// TODO handle SIGINT
 
 int worker(int w_id) {
-    int pid = getpid();
+    pid_t pid = getpid();
     int exit_code = EC_OK;
     char fifo0[PATH_MAX], fifo1[PATH_MAX];
     sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
@@ -155,7 +155,11 @@ int worker(int w_id) {
     }
     */
 
-    int strings_found = 0;
+    StringList *strings_found = createStringList();
+    if (strings_found == NULL) {
+        return EC_MEM;
+    }
+    int strings_found_len = 0;
     char logfile[PATH_MAX + 1];
     sprintf(logfile, "%s/Worker%d/%d.log", LOGPATH, w_id, pid);
     FILE *logfp = fopen(logfile, "w");
@@ -203,7 +207,9 @@ int worker(int w_id) {
                     currTerm = currTerm->next;
                     continue;
                 }
-                strings_found++;
+                if (!existsInStringList(strings_found, currTerm->string)) {
+                    strings_found_len++;
+                }
                 fprintf(logfp, "%s : %s : %s", getCurrentTime(), cmds[0] + 1, currTerm->string);
                 PostingListNode *currPLNode = keywordPostingList->first;
                 while (currPLNode != NULL) {
@@ -316,7 +322,7 @@ int worker(int w_id) {
             }
             fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
         } else if (!strcmp(command, cmds[5])) {       // exit
-            sprintf(msgbuf, "%d", strings_found);
+            sprintf(msgbuf, "%d", strings_found_len);
             if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
@@ -335,6 +341,7 @@ int worker(int w_id) {
     if (bufferptr != NULL) {
         free(bufferptr);
     }
+    free(strings_found);
     if (fclose(logfp) < 0) {
         perror("fclose");
     }

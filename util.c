@@ -58,6 +58,19 @@ int appendStringListNode(StringList *list, char *string) {
     return EC_OK;
 }
 
+int existsInStringList(StringList *list, char *string) {
+    if (list != NULL) {
+        StringListNode *current = list->first;
+        while (current != NULL) {
+            if (!strcmp(current->string, string)) {
+                return 1;
+            }
+            current = current->next;
+        }
+    }
+    return 0;
+}
+
 void destroyStringList(StringList **list) {
     if (*list == NULL) {
         fprintf(stderr, "Attempted to delete a NULL StringList.\n");

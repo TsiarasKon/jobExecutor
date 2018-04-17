@@ -20,13 +20,15 @@ int worker(int w_id);
 int makeProgramDirs(int w);
 int getNextIncomplete(const int completed[], int w);
 
-void nothing_handler(int signum) {
-    // Its only purpose is to unpause the workers
-}
-
 int timeout = 0;
 void timeout_handler(int signum) {
     timeout = 1;
+}
+
+void child_handler(int signum) {
+    int status;
+    pid_t pid = wait(&status);
+    printf("Worker with pid %d killed with status %d.\n", pid, status);
 }
 
 int main(int argc, char *argv[]) {
@@ -80,8 +82,7 @@ int main(int argc, char *argv[]) {
         return exit_code;
     }
 
-    signal(SIGCONT, nothing_handler);
-    int pids[w];
+    pid_t pids[w];
     struct pollfd pfd1s[w];
     for (int i = 0; i < w; i++) {
         pfd1s[i].events = POLLIN;
@@ -165,6 +166,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    signal(SIGCHLD, child_handler);
     signal(SIGALRM, timeout_handler);
 
     /// TODO force BUSIZ with check
@@ -201,9 +203,9 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "Invalid use of '/search': Type '/help' to see the correct syntax.\n");
                 continue;
             }
-            sprintf(msgbuf, "/search %s %s", prev_keyword2, prev_keyword1);
+            sprintf(msgbuf, "/search");
             while (keyword != NULL) {
-                sprintf(msgbuf, "%s %s", msgbuf, keyword);
+                sprintf(msgbuf, "%s %s", msgbuf, prev_keyword2);
                 prev_keyword2 = prev_keyword1;
                 prev_keyword1 = keyword;
                 keyword = strtok(NULL, " \t");
@@ -225,7 +227,6 @@ int main(int argc, char *argv[]) {
             }
             // Search query is valid so we pass it to the workers:
             for (int w_id = 0; w_id < w; w_id++) {
-                kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
@@ -294,7 +295,6 @@ int main(int argc, char *argv[]) {
                 continue;
             }
             for (int w_id = 0; w_id < w; w_id++) {
-                kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
@@ -351,7 +351,6 @@ int main(int argc, char *argv[]) {
                 continue;
             }
             for (int w_id = 0; w_id < w; w_id++) {
-                kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
@@ -403,7 +402,6 @@ int main(int argc, char *argv[]) {
             }
         } else if (!strcmp(command, cmds[3])) {       // wc
             for (int w_id = 0; w_id < w; w_id++) {
-                kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
@@ -451,7 +449,6 @@ int main(int argc, char *argv[]) {
         } else if (!strcmp(command, cmds[5])) {       // exit
             command = strtok(NULL, " \t");
             for (int w_id = 0; w_id < w; w_id++) {
-                kill(pids[w_id], SIGCONT);      // signal workers to unpause
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
