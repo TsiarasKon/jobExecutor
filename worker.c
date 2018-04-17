@@ -173,7 +173,7 @@ int worker(int w_id) {
         command = strtok(msgbuf, " \t");
         if (!strcmp(command, cmds[0])) {          // search
             char *keyword = strtok(NULL, " \t");
-            if (keyword == NULL || !strcmp(keyword, "-d")) {
+            if (keyword == NULL) {
                 exit_code = EC_UNKNOWN;
                 break;
             }

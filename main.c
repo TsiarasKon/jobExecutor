@@ -179,30 +179,46 @@ int main(int argc, char *argv[]) {
         strtok(buffer, "\n");     // remove trailing newline character
         command = strtok(buffer, " \t");
         if (!strcmp(command, cmds[0])) {          // search
-            // TODO accept "-d" as term
             // Validating search query:
             char *keyword = strtok(NULL, " \t");
-            if (keyword == NULL || !strcmp(keyword, "-d")) {
+            char *prev_keyword1 = NULL, *prev_keyword2 = NULL;
+            if (keyword == NULL) {
                 fprintf(stderr, "Invalid use of '/search': At least one query term is required.\n");
                 fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
                 continue;
             }
+            prev_keyword1 = keyword;
             keyword = strtok(NULL, " \t");
-            while (keyword != NULL && (strcmp(keyword, "-d") != 0)) {
-                keyword = strtok(NULL, " \t");
-            }
-            if (keyword == NULL || (strcmp(keyword, "-d") != 0)) {
+            if (keyword == NULL) {
                 fprintf(stderr, "Invalid use of '/search': No deadline specified.\n");
                 fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
                 continue;
             }
+            prev_keyword2 = prev_keyword1;
+            prev_keyword1 = keyword;
             keyword = strtok(NULL, " \t");
-            if (keyword == NULL || !isdigit(*keyword)) {
+            if (keyword == NULL) {
+                fprintf(stderr, "Invalid use of '/search': Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            sprintf(msgbuf, "/search %s %s", prev_keyword2, prev_keyword1);
+            while (keyword != NULL) {
+                sprintf(msgbuf, "%s %s", msgbuf, keyword);
+                prev_keyword2 = prev_keyword1;
+                prev_keyword1 = keyword;
+                keyword = strtok(NULL, " \t");
+            }
+            if ((strcmp(prev_keyword2, "-d")) != 0) {
+                fprintf(stderr, "Invalid use of '/search': No deadline specified.\n");
+                fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
+                continue;
+            }
+            if (!isdigit(*prev_keyword1)) {
                 fprintf(stderr, "Invalid use of '/search': Invalid deadline.\n");
                 fprintf(stderr, "  Type '/help' to see the correct syntax.\n");
                 continue;
             }
-            int deadline = atoi(keyword);
+            int deadline = atoi(prev_keyword1);
             if (deadline < 0) {
                 fprintf(stderr, "Invalid use of '/search': Negative deadline.\n");
                 continue;
@@ -224,6 +240,7 @@ int main(int argc, char *argv[]) {
                     return EC_MEM;
                 }
             }
+            int w_responded = 0;
             timeout = 0;
             if (deadline != 0) {
                 alarm((unsigned int) deadline);
@@ -244,6 +261,7 @@ int main(int argc, char *argv[]) {
                         }
                         if (*msgbuf == '$') {
                             completed[w_id] = 1;
+                            w_responded++;
                         } else {
                             appendStringListNode(worker_results[w_id], msgbuf);
                         }
@@ -252,7 +270,13 @@ int main(int argc, char *argv[]) {
                 }
             }
             errno = 0;
+            for (w_id = 0; w_id < w; w_id++) {
+                if (!completed[w_id]) {
+                    printf("Worker%d failed to respond on time.\n", w_id);
+                }
+            }
             // Print results of workers who completed before timeout:
+            printf("Printing search results from %d out of %d Workers:\n", w_responded, w);
             for (w_id = 0; w_id < w; w_id++) {
                 if (completed[w_id]) {
                     StringListNode *current = worker_results[w_id]->first;
@@ -263,8 +287,6 @@ int main(int argc, char *argv[]) {
                 }
                 destroyStringList(&worker_results[w_id]);
             }
-
-
         } else if (!strcmp(command, cmds[1])) {       // maxcount
             char *keyword = strtok(NULL, " \t");
             if (keyword == NULL) {
