@@ -20,20 +20,21 @@ int worker(int w_id);
 int makeProgramDirs(int w);
 int getNextIncomplete(const int completed[], int w);
 
-int timeout = 0;
+static int timeout = 0;
 void timeout_handler(int signum) {
     timeout = 1;
 }
 
+pid_t exited_worker_pid = 0;
 void child_handler(int signum) {
     int status;
-    pid_t pid = wait(&status);
-    printf("Worker with pid %d killed with status %d.\n", pid, status);
+    exited_worker_pid = wait(&status);
+    printf("Worker with pid %d killed with status %d.\n", exited_worker_pid, status);
 }
 
 int main(int argc, char *argv[]) {
     if (argc != 5) {
-        fprintf(stderr, "Invalid arguments. Please run ");       ///
+        fprintf(stderr, "Invalid arguments. Please run \"$ ./jobExecutor -d docfile -w numWorkers\"\n");
         return EC_ARG;
     }
     int w = 0;
@@ -52,7 +53,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (w == 0 || docfile == NULL) {
-        fprintf(stderr, "Invalid arguments. Please run ");       ///
+        fprintf(stderr, "Invalid arguments. Please run \"$ ./jobExecutor -d docfile -w numWorkers\"\n");
         return EC_ARG;
     }
 
@@ -87,16 +88,35 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < w; i++) {
         pfd1s[i].events = POLLIN;
     }
-    char fifo0[PATH_MAX], fifo1[PATH_MAX];
+    char fifo0_name[PATH_MAX], fifo1_name[PATH_MAX];
     for(int w_id = 0; w_id < w; w_id++) {
-        sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
-        sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
-        /// TODO clear pipes after interrupt
-        if (((mkfifo(fifo0, 0666) == -1) || (mkfifo(fifo1, 0666) == -1)) && (errno != EEXIST)) {
-            perror("Error creating pipes");
-            return EC_PIPE;
+        sprintf(fifo0_name, "%s/Worker%d_0", PIPEPATH, w_id);
+        if (mkfifo(fifo0_name, 0666) == -1) {
+            if (errno == EEXIST) {      // if fifo already existed we delete it (for good measure) and retry creating it
+                unlink(fifo0_name);
+                if (mkfifo(fifo0_name, 0666) == -1) {
+                    perror("Error creating pipe");
+                    return EC_PIPE;
+                }
+            } else {
+                perror("Error creating pipe");
+                return EC_PIPE;
+            }
         }
-        pfd1s[w_id].fd = open(fifo1, O_RDONLY | O_NONBLOCK);
+        sprintf(fifo1_name, "%s/Worker%d_1", PIPEPATH, w_id);
+        if (mkfifo(fifo1_name, 0666) == -1) {
+            if (errno == EEXIST) {      // if fifo already existed we delete it (for good measure) and retry creating it
+                unlink(fifo1_name);
+                if (mkfifo(fifo1_name, 0666) == -1) {
+                    perror("Error creating pipe");
+                    return EC_PIPE;
+                }
+            } else {
+                perror("Error creating pipe");
+                return EC_PIPE;
+            }
+        }
+        pfd1s[w_id].fd = open(fifo1_name, O_RDONLY | O_NONBLOCK);
         if (pfd1s[w_id].fd < 0) {
             perror("Error opening pipe");
             return EC_PIPE;
@@ -142,8 +162,8 @@ int main(int argc, char *argv[]) {
 
     int fd0s[w];
     for(int w_id = 0; w_id < w; w_id++) {
-        sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
-        fd0s[w_id] = open(fifo0, O_WRONLY);
+        sprintf(fifo0_name, "%s/Worker%d_0", PIPEPATH, w_id);
+        fd0s[w_id] = open(fifo0_name, O_WRONLY);
         if (fd0s[w_id] < 0) {
             perror("Error opening pipe");
             return EC_PIPE;
@@ -169,9 +189,37 @@ int main(int argc, char *argv[]) {
     signal(SIGCHLD, child_handler);
     signal(SIGALRM, timeout_handler);
 
-    /// TODO force BUSIZ with check
     char *command, msgbuf[BUFSIZ + 1];
     while (1) {
+//        if (exited_worker_pid != 0) {
+//            int w_id = 0;
+//            for (w_id = 0; w_id < w; w_id++) {
+//                if (pids[w_id] == exited_worker_pid) {
+//                    break;
+//                }
+//            }
+//            pids[w_id] = fork();
+//            if (pids[w_id] < 0) {
+//                perror("fork");
+//                return EC_FORK;
+//            } else if (pids[w_id] == 0) {
+//                printf("Created Worker%d with pid %d\n", w_id, getpid());
+//                return worker(w_id);
+//            }
+//            for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {
+//                strcpy(pipebuffer, dirnames[curr_dir]);
+//                if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
+//                    perror("Error writing to pipe");
+//                    return EC_PIPE;
+//                }
+//            }
+//            strcpy(pipebuffer, "$");
+//            if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
+//                perror("Error writing to pipe");
+//                return EC_PIPE;
+//            }
+//            exited_worker_pid = 0;
+//        }
         printf("\n");
         // Until "/exit" is given, read current line and attempt to execute it as a command
         printf("Type a command:\n");
@@ -271,9 +319,12 @@ int main(int argc, char *argv[]) {
                 }
             }
             errno = 0;
-            for (w_id = 0; w_id < w; w_id++) {
-                if (!completed[w_id]) {
-                    printf("Worker%d failed to respond on time.\n", w_id);
+            if (timeout) {
+                for (w_id = 0; w_id < w; w_id++) {
+                    kill(pids[w_id], SIGUSR1);
+                    if (!completed[w_id]) {
+                        printf("Worker%d failed to respond on time.\n", w_id);
+                    }
                 }
             }
             // Print results of workers who completed before timeout:
@@ -287,6 +338,25 @@ int main(int argc, char *argv[]) {
                     }
                 }
                 destroyStringList(&worker_results[w_id]);
+            }
+            // Read what's left from incomplete workers:
+            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+                    perror("poll");
+                    return EC_PIPE;
+                }
+                while (completed[w_id] == 0 && w_id < w) {
+                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        if (*msgbuf == '$') {
+                            completed[w_id] = 1;
+                        }
+                    }
+                    w_id++;
+                }
             }
         } else if (!strcmp(command, cmds[1])) {       // maxcount
             char *keyword = strtok(NULL, " \t");
@@ -447,6 +517,7 @@ int main(int argc, char *argv[]) {
             printf(" '/exit' to terminate this program.\n");
             printf(" '/exit -l' to terminate this program and also delete all log files.\n");
         } else if (!strcmp(command, cmds[5])) {       // exit
+            signal(SIGCHLD, NULL);      // don't want to invoke signal handler at this point
             command = strtok(NULL, " \t");
             for (int w_id = 0; w_id < w; w_id++) {
                 if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
@@ -517,9 +588,9 @@ int main(int argc, char *argv[]) {
         if (close(fd0s[w_id]) < 0 || close(pfd1s[w_id].fd) < 0) {
             perror("Error closing pipes");
         }
-        sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
-        sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
-        if (unlink(fifo0) < 0 || unlink(fifo1) < 0) {
+        sprintf(fifo0_name, "%s/Worker%d_0", PIPEPATH, w_id);
+        sprintf(fifo1_name, "%s/Worker%d_1", PIPEPATH, w_id);
+        if (unlink(fifo0_name) < 0 || unlink(fifo1_name) < 0) {
             perror("Error deleting pipes");
         }
     }
@@ -530,6 +601,7 @@ int main(int argc, char *argv[]) {
         free(bufferptr);
     }
     free(docfile);
+    printf("jobExecutor has exited.\n");
     return exit_code;
 }
 

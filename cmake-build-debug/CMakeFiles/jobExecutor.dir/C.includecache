@@ -93,8 +93,6 @@ stdlib.h
 -
 string.h
 -
-ctype.h
--
 dirent.h
 -
 errno.h

@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -12,10 +11,13 @@
 #include "paths.h"
 #include "util.h"
 
-
-/// TODO handle SIGINT
+static int worker_timeout = 0;
+void worker_timeout_handler(int signum) {
+    worker_timeout = 1;
+}
 
 int worker(int w_id) {
+    signal(SIGUSR1, worker_timeout_handler);
     pid_t pid = getpid();
     int exit_code = EC_OK;
     char fifo0[PATH_MAX], fifo1[PATH_MAX];
@@ -176,6 +178,7 @@ int worker(int w_id) {
         strtok(msgbuf, "\n");     // remove trailing newline character
         command = strtok(msgbuf, " \t");
         if (!strcmp(command, cmds[0])) {          // search
+            worker_timeout = 0;
             char *keyword = strtok(NULL, " \t");
             if (keyword == NULL) {
                 exit_code = EC_UNKNOWN;
@@ -200,7 +203,7 @@ int worker(int w_id) {
             for (int i = 0; i < doc_count; i++) {
                 doclines_returned[i] = NULL;
             }
-            while (currTerm != NULL) {
+            while (currTerm != NULL && worker_timeout == 0) {
                 PostingList *keywordPostingList = getPostingList(trie, currTerm->string);
                 if (keywordPostingList == NULL) {     // current term doesn't exist in trie
                     fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[0] + 1, currTerm->string);
@@ -215,18 +218,18 @@ int worker(int w_id) {
                 while (currPLNode != NULL) {
                     fprintf(logfp, " : %s", docnames[currPLNode->id]);
                     IntListNode *currLine = currPLNode->lines->first;
-                    while (currLine != NULL) {
-                        //if (w_id == 2) sleep(1);    ///
+                    while (currLine != NULL && worker_timeout == 0) {
+                        //sleep(1);    /// For debug puposes
                         if (doclines_returned[currPLNode->id] == NULL) {
                             doclines_returned[currPLNode->id] = createPostingListNode(currPLNode->id, currLine->line);
                         } else if (existsInIntList(doclines_returned[currPLNode->id]->lines, currLine->line)) {
-                            // Line has already been sent to jobExecutor
+                            // Line has already been sent to jobExecutor from a previous term
                             currLine = currLine->next;
                             continue;
                         }
                         appendIntListNode(doclines_returned[currPLNode->id]->lines, currLine->line);
                         sprintf(msgbuf, "%s %d %s", docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
-                        if (write(fd1, msgbuf, BUFSIZ) < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+                        if (write(fd1, msgbuf, BUFSIZ) < 0) {
                             perror("Error writing to pipe");
                             return EC_PIPE;
                         }
@@ -244,7 +247,7 @@ int worker(int w_id) {
             }
             free(doclines_returned);
             sprintf(msgbuf, "$");
-            if (write(fd1, msgbuf, BUFSIZ) < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+            if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
@@ -346,7 +349,7 @@ int worker(int w_id) {
         perror("fclose");
     }
     if (close(fd0) < 0 || close(fd1) < 0) {
-        perror("Error opening pipes");
+        perror("Error closing pipes");
     }
     deleteTrie(&trie);
     for (int i = 0; i < doc_count; i++) {
