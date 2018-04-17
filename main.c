@@ -245,16 +245,24 @@ int main(int argc, char *argv[]) {
                         if (*msgbuf == '$') {
                             completed[w_id] = 1;
                         } else {
-                            printf("%s\n", msgbuf);
-//                            buffer = strtok(msgbuf, " ");
-//                            buffer = strtok(NULL, " ");
-//                            printf("%s\n", buffer);
+                            appendStringListNode(worker_results[w_id], msgbuf);
                         }
                     }
                     w_id++;
                 }
             }
             errno = 0;
+            // Print results of workers who completed before timeout:
+            for (w_id = 0; w_id < w; w_id++) {
+                if (completed[w_id]) {
+                    StringListNode *current = worker_results[w_id]->first;
+                    while (current != NULL) {
+                        printf("%s\n", current->string);
+                        current = current->next;
+                    }
+                }
+                destroyStringList(&worker_results[w_id]);
+            }
 
 
         } else if (!strcmp(command, cmds[1])) {       // maxcount

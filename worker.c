@@ -192,6 +192,10 @@ int worker(int w_id) {
                 keyword = strtok(NULL, " \t");
             }
             StringListNode *currTerm = terms->first;
+            PostingListNode **doclines_returned = malloc(doc_count * sizeof(PostingListNode*));
+            for (int i = 0; i < doc_count; i++) {
+                doclines_returned[i] = NULL;
+            }
             while (currTerm != NULL) {
                 PostingList *keywordPostingList = getPostingList(trie, currTerm->string);
                 if (keywordPostingList == NULL) {     // current term doesn't exist in trie
@@ -207,6 +211,14 @@ int worker(int w_id) {
                     IntListNode *currLine = currPLNode->lines->first;
                     while (currLine != NULL) {
                         //if (w_id == 2) sleep(1);    ///
+                        if (doclines_returned[currPLNode->id] == NULL) {
+                            doclines_returned[currPLNode->id] = createPostingListNode(currPLNode->id, currLine->line);
+                        } else if (existsInIntList(doclines_returned[currPLNode->id]->lines, currLine->line)) {
+                            // Line has already been sent to jobExecutor
+                            currLine = currLine->next;
+                            continue;
+                        }
+                        appendIntListNode(doclines_returned[currPLNode->id]->lines, currLine->line);
                         sprintf(msgbuf, "%s %d %s", docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
                         if (write(fd1, msgbuf, BUFSIZ) < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
                             perror("Error writing to pipe");
@@ -219,6 +231,12 @@ int worker(int w_id) {
                 fprintf(logfp, "\n");
                 currTerm = currTerm->next;
             }
+            for (int i = 0; i < doc_count; i++) {
+                if (doclines_returned[i] != NULL) {
+                    deletePostingListNode(&doclines_returned[i]);
+                }
+            }
+            free(doclines_returned);
             sprintf(msgbuf, "$");
             if (write(fd1, msgbuf, BUFSIZ) < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
                 perror("Error writing to pipe");

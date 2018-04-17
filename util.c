@@ -113,6 +113,19 @@ int appendIntListNode(IntList *list, int x) {
     return EC_OK;
 }
 
+int existsInIntList(IntList *list, int x) {
+    if (list != NULL) {
+        IntListNode *current = list->first;
+        while (current != NULL) {
+            if (current->line == x) {
+                return 1;
+            }
+            current = current->next;
+        }
+    }
+    return 0;
+}
+
 void destroyIntList(IntList **list) {
     if (*list == NULL) {
         fprintf(stderr, "Attempted to delete a NULL StringList.\n");

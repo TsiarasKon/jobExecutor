@@ -1,0 +1,10 @@
+2018-04-17 14:52:43 : search : Hello :
+2018-04-17 14:52:43 : search : there :
+2018-04-17 14:52:43 : search : -d :
+2018-04-17 14:52:43 : search : 2 :
+2018-04-17 14:53:08 : search : "Lorem : /home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/cmake-build-debug/anothertest/much text
+2018-04-17 14:53:08 : search : ipsum : /home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/cmake-build-debug/anothertest/much text
+2018-04-17 14:53:08 : search : -d :
+2018-04-17 14:53:08 : search : 24 :
+2018-04-17 14:53:16 : wc : 518 : 86 : 18
+2018-04-17 14:53:22 : maxcount : Hello :

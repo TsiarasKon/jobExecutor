@@ -4,11 +4,11 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/main.c" "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/main.c.o"
-  "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.c" "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/postinglist.c.o"
-  "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.c" "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/trie.c.o"
-  "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.c" "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/util.c.o"
-  "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/worker.c" "/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/worker.c.o"
+  "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/main.c" "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/main.c.o"
+  "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/postinglist.c" "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/postinglist.c.o"
+  "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/trie.c" "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/trie.c.o"
+  "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/util.c" "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/util.c.o"
+  "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/worker.c" "/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/cmake-build-debug/CMakeFiles/jobExecutor.dir/worker.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

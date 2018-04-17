@@ -48,6 +48,7 @@ struct intlist {
 };
 IntList* createIntList();
 int appendIntListNode(IntList *list, int x);
+int existsInIntList(IntList *list, int x);
 void destroyIntList(IntList **list);
 
 

@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/main.c
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/main.c
 stdio.h
 -
 stdlib.h
@@ -32,15 +32,15 @@ sys/stat.h
 poll.h
 -
 trie.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/trie.h
 paths.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/paths.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/paths.h
 util.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/util.h
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/paths.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/paths.h
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.c
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/postinglist.c
 stdio.h
 -
 stdlib.h
@@ -48,15 +48,15 @@ stdlib.h
 string.h
 -
 postinglist.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/postinglist.h
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/postinglist.h
 trie.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/trie.h
 util.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/util.h
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.c
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/trie.c
 stdio.h
 -
 stdlib.h
@@ -64,13 +64,13 @@ stdlib.h
 string.h
 -
 trie.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/trie.h
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/trie.h
 postinglist.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/postinglist.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/postinglist.h
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.c
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/util.c
 stdio.h
 -
 stdlib.h
@@ -82,11 +82,11 @@ time.h
 sys/time.h
 -
 util.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/util.h
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/util.h
 
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/worker.c
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/worker.c
 stdio.h
 -
 stdlib.h
@@ -106,9 +106,9 @@ unistd.h
 signal.h
 -
 trie.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/trie.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/trie.h
 paths.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/paths.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/paths.h
 util.h
-/home/ch0sen/Desktop/MyProjects/DI/jobExecutor/util.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/util.h
 
