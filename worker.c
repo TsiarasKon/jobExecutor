@@ -165,7 +165,7 @@ int worker(int w_id) {
     char logfile[PATH_MAX + 1];
     sprintf(logfile, "%s/Worker%d/%d.log", LOGPATH, w_id, pid);
     FILE *logfp = fopen(logfile, "w");
-    if (logfp < 0) {
+    if (logfp == NULL) {
         perror("fopen");
         return EC_FILE;
     }
@@ -228,7 +228,7 @@ int worker(int w_id) {
                             continue;
                         }
                         appendIntListNode(doclines_returned[currPLNode->id]->lines, currLine->line);
-                        sprintf(msgbuf, "%s %d %s", docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
+                        sprintf(msgbuf, "\"%s\" %d %s", docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
                         if (write(fd1, msgbuf, BUFSIZ) < 0) {
                             perror("Error writing to pipe");
                             return EC_PIPE;

@@ -1,4 +1,0 @@
-./test
-	./anothertest
-./log/Worker1
- ./test2/hey

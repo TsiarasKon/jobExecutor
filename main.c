@@ -66,6 +66,9 @@ int main(int argc, char *argv[]) {
     char *buffer = NULL, *bufferptr = NULL;
     int dirs_num = 0;
     while (getline(&buffer, &bufsize, fp) != -1) {
+        if (buffer[0] == '\n')  {     // ignore empty lines
+            continue;
+        }
         dirs_num++;
     }
     fclose(fp);
@@ -145,6 +148,10 @@ int main(int argc, char *argv[]) {
         if (getline(&buffer, &bufsize, fp) == -1) {
             perror("Error");
             return EC_UNKNOWN;
+        }
+        if (buffer[0] == '\n')  {     // ignore empty lines
+            curr_line--;    // empty lines shouldn't count as actual lines
+            continue;
         }
         bufferptr = buffer;
         strtok(buffer, "\n");
@@ -552,6 +559,7 @@ int main(int argc, char *argv[]) {
             }
             // Deleting logs, if "-l" was specified:
             if (command != NULL && !strcmp(command, "-l")) {
+                int del_error = 0;
                 DIR *dirp;
                 struct dirent *curr_dirent;
                 char curr_dirname[PATH_MAX + 1], curr_filename[PATH_MAX + 1];
@@ -559,6 +567,7 @@ int main(int argc, char *argv[]) {
                     sprintf(curr_dirname, "%s/Worker%d", LOGPATH, w_id);
                     if ((dirp = opendir(curr_dirname)) == NULL) {
                         perror("Error opening log directory for deletion");
+                        del_error = 1;
                         continue;
                     }
                     while ((curr_dirent = readdir(dirp))) {
@@ -566,15 +575,23 @@ int main(int argc, char *argv[]) {
                             sprintf(curr_filename, "%s/%s", curr_dirname, curr_dirent->d_name);
                             if (unlink(curr_filename) < 0) {
                                 perror("Error deleting logfile");
+                                del_error = 1;
                             }
                         }
                     }
                     if (rmdir(curr_dirname) < 0) {
                         perror("Error deleting log directory");
+                        del_error = 1;
                     }
                 }
                 if (rmdir(LOGPATH) < 0) {
                     perror("Error deleting log directory");
+                    del_error = 1;
+                }
+                if (del_error) {
+                    printf("Log files were not deleted due to an unexpected error.\n");
+                } else {
+                    printf("Log files were successfully deleted.\n");
                 }
             }
             break;
