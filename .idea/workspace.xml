@@ -12,16 +12,38 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5307b7c2-1bf6-403e-b438-79efefaada27" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker0/25123.log" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker0/25555.log" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker0/25877.log" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker1/25124.log" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker1/25556.log" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker1/25878.log" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker2/25125.log" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker2/25557.log" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/log/Worker2/25879.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/29819.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker1/29820.log" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/main.c.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/main.c.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/worker.c.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/worker.c.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/jobExecutor" afterPath="$PROJECT_DIR$/cmake-build-debug/jobExecutor" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jobExecutor" afterPath="$PROJECT_DIR$/jobExecutor" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.o" afterPath="$PROJECT_DIR$/main.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/postinglist.o" afterPath="$PROJECT_DIR$/postinglist.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/trie.o" afterPath="$PROJECT_DIR$/trie.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/util.o" afterPath="$PROJECT_DIR$/util.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/worker.o" afterPath="$PROJECT_DIR$/worker.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CMakeLists.txt" afterPath="$PROJECT_DIR$/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Makefile" afterPath="$PROJECT_DIR$/Makefile" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/DependInfo.cmake" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/DependInfo.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/build.make" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/build.make" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/cmake_clean.cmake" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/cmake_clean.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/link.txt" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/link.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/progress.make" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jobExecutor.dir/progress.make" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake-build-debug/jobExecutor.cbp" afterPath="$PROJECT_DIR$/cmake-build-debug/jobExecutor.cbp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/input_files/dirfile.txt" afterPath="$PROJECT_DIR$/input_files/dirfile.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.c" afterPath="$PROJECT_DIR$/main.c" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/postinglist.c" afterPath="$PROJECT_DIR$/postinglist.c" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/postinglist.h" afterPath="$PROJECT_DIR$/postinglist.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/trie.c" afterPath="$PROJECT_DIR$/trie.c" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/util.c" afterPath="$PROJECT_DIR$/util.c" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/util.h" afterPath="$PROJECT_DIR$/util.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/worker.c" afterPath="$PROJECT_DIR$/worker.c" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -33,14 +55,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5925926">
+    <splitter split-orientation="horizontal" split-proportion="0.4202806">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
+          <file leaf-file-name="main.c" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/main.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="420">
-                  <caret line="591" column="76" lean-forward="false" selection-start-line="591" selection-start-column="76" selection-end-line="591" selection-end-column="76" />
+                <state relative-caret-position="2448">
+                  <caret line="136" column="25" lean-forward="false" selection-start-line="136" selection-start-column="25" selection-end-line="136" selection-end-column="25" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -48,21 +70,21 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="postinglist.c" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/postinglist.c">
+          <file leaf-file-name="trie.c" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/trie.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1476">
-                  <caret line="82" column="49" lean-forward="false" selection-start-line="82" selection-start-column="49" selection-end-line="82" selection-end-column="49" />
+                <state relative-caret-position="72">
+                  <caret line="4" column="16" lean-forward="false" selection-start-line="4" selection-start-column="16" selection-end-line="4" selection-end-column="16" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="postinglist.h" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/postinglist.h">
+          <file leaf-file-name="postinglist.c" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/postinglist.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="252">
-                  <caret line="14" column="4" lean-forward="false" selection-start-line="14" selection-start-column="4" selection-end-line="14" selection-end-column="4" />
+                <state relative-caret-position="-36">
+                  <caret line="4" column="16" lean-forward="false" selection-start-line="4" selection-start-column="16" selection-end-line="4" selection-end-column="16" />
                   <folding />
                 </state>
               </provider>
@@ -75,8 +97,8 @@
           <file leaf-file-name="worker.c" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/worker.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="252">
-                  <caret line="233" column="12" lean-forward="true" selection-start-line="233" selection-start-column="12" selection-end-line="233" selection-end-column="12" />
+                <state relative-caret-position="694">
+                  <caret line="250" column="30" lean-forward="false" selection-start-line="250" selection-start-column="30" selection-end-line="250" selection-end-column="30" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -87,8 +109,8 @@
           <file leaf-file-name="util.h" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/util.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="630">
-                  <caret line="35" column="0" lean-forward="false" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
+                <state relative-caret-position="252">
+                  <caret line="14" column="20" lean-forward="false" selection-start-line="14" selection-start-column="20" selection-end-line="14" selection-end-column="20" />
                   <folding />
                 </state>
               </provider>
@@ -97,7 +119,7 @@
           <file leaf-file-name="main.c" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/main.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="414">
+                <state relative-caret-position="162">
                   <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
@@ -109,8 +131,32 @@
           <file leaf-file-name="util.c" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/util.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="270">
-                  <caret line="15" column="2" lean-forward="false" selection-start-line="15" selection-start-column="2" selection-end-line="15" selection-end-column="2" />
+                <state relative-caret-position="684">
+                  <caret line="38" column="0" lean-forward="false" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="lists.c" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/lists.c">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-80">
+                  <caret line="71" column="30" lean-forward="false" selection-start-line="71" selection-start-column="30" selection-end-line="71" selection-end-column="30" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="lists.h" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/lists.h">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="702">
+                  <caret line="39" column="35" lean-forward="false" selection-start-line="39" selection-start-column="35" selection-end-line="39" selection-end-column="35" />
                   <folding />
                 </state>
               </provider>
@@ -122,11 +168,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>PATH</find>
-      <find>command</find>
-      <find>PATH_MAX</find>
-      <find>mallo</find>
-      <find>perror(&quot;Failed to allocate memory&quot;);</find>
       <find>fd</find>
       <find>getpid()</find>
       <find>cmds</find>
@@ -146,16 +187,22 @@
       <find>SIGCONT</find>
       <find>SIGC</find>
       <find>pid</find>
-      <find>strings_found</find>
       <find>///</find>
       <find>fifo0</find>
-      <find>strings_found_len</find>
       <find>failed to</find>
       <find>Error&quot;</find>
+      <find>strings_found_len</find>
+      <find>docnames</find>
+      <find>dirnames</find>
+      <find>strings_found</find>
+      <find>currTerm</find>
+      <find>terms</find>
+      <find>Posting</find>
     </findStrings>
     <replaceStrings>
       <replace>pid</replace>
       <replace>perror(&quot;malloc&quot;);</replace>
+      <replace>String</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -169,14 +216,16 @@
         <option value="$PROJECT_DIR$/doc_struct.h" />
         <option value="$PROJECT_DIR$/paths.h" />
         <option value="$PROJECT_DIR$/pairingheap.c" />
-        <option value="$PROJECT_DIR$/trie.c" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/main.c" />
+        <option value="$PROJECT_DIR$/lists.h" />
         <option value="$PROJECT_DIR$/postinglist.h" />
         <option value="$PROJECT_DIR$/postinglist.c" />
         <option value="$PROJECT_DIR$/util.h" />
         <option value="$PROJECT_DIR$/util.c" />
+        <option value="$PROJECT_DIR$/trie.c" />
+        <option value="$PROJECT_DIR$/lists.c" />
         <option value="$PROJECT_DIR$/worker.c" />
-        <option value="$PROJECT_DIR$/main.c" />
       </list>
     </option>
   </component>
@@ -194,7 +243,7 @@
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
-    <navigator proportions="" version="1">
+    <navigator currentView="ProjectPane" proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -207,7 +256,19 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="jobExecutor" type="dad4c3:CidrFilesViewHelper$MyProjectTreeStructure$1" />
+              <item name="jobExecutor" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -270,35 +331,36 @@
       <workItem from="1523533024768" duration="2840000" />
       <workItem from="1523904515491" duration="1940000" />
       <workItem from="1523960685874" duration="14694000" />
-      <workItem from="1523987152160" duration="4525000" />
+      <workItem from="1523987152160" duration="6036000" />
+      <workItem from="1524039550421" duration="1777000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="150235000" />
+    <option name="totallyTimeSpent" value="153523000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="808" y="-4" width="1857" height="1092" extended-state="6" />
     <editor active="true" />
     <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13322277" sideWeight="0.42888403" order="1" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2154233" sideWeight="0.49124727" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23455498" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2557895" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25357872" sideWeight="0.5037807" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924336" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2722513" sideWeight="0.49621928" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2524377" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.13369273" sideWeight="0.42888403" order="1" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32822084" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2722513" sideWeight="0.49621928" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22766571" sideWeight="0.571116" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2524377" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.16345347" sideWeight="0.49234137" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36707565" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23455498" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32822084" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
@@ -367,29 +429,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="15" />
+      <option name="time" value="17" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/main.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="437">
-          <caret line="23" column="22" lean-forward="false" selection-start-line="23" selection-start-column="22" selection-end-line="23" selection-end-column="22" />
-          <folding>
-            <element signature="e#45#63#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/postinglist.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1729">
-          <caret line="91" column="49" lean-forward="true" selection-start-line="91" selection-start-column="49" selection-end-line="93" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/trie.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2850">
@@ -402,7 +446,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="513">
           <caret line="27" column="44" lean-forward="false" selection-start-line="27" selection-start-column="44" selection-end-line="27" selection-end-column="44" />
-          <folding />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -451,7 +497,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="190">
           <caret line="10" column="20" lean-forward="false" selection-start-line="10" selection-start-column="20" selection-end-line="10" selection-end-column="20" />
-          <folding />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -500,7 +548,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="190">
           <caret line="10" column="20" lean-forward="true" selection-start-line="10" selection-start-column="20" selection-end-line="10" selection-end-column="20" />
-          <folding />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -561,7 +611,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="152">
           <caret line="8" column="26" lean-forward="true" selection-start-line="8" selection-start-column="26" selection-end-line="11" selection-end-column="5" />
-          <folding />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -636,25 +688,11 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pairingheap.h" />
-    <entry file="file://$PROJECT_DIR$/trie.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="494">
-          <caret line="28" column="56" lean-forward="true" selection-start-line="28" selection-start-column="56" selection-end-line="28" selection-end-column="56" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/interface.c" />
     <entry file="file:///usr/include/unistd.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="229">
           <caret line="355" column="11" lean-forward="false" selection-start-line="355" selection-start-column="11" selection-end-line="355" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/trie.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1387">
-          <caret line="38" column="18" lean-forward="false" selection-start-line="38" selection-start-column="18" selection-end-line="38" selection-end-column="18" />
         </state>
       </provider>
     </entry>
@@ -673,52 +711,90 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/postinglist.c">
+    <entry file="file://$PROJECT_DIR$/lists.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1476">
-          <caret line="82" column="49" lean-forward="false" selection-start-line="82" selection-start-column="49" selection-end-line="82" selection-end-column="49" />
+        <state relative-caret-position="702">
+          <caret line="39" column="35" lean-forward="false" selection-start-line="39" selection-start-column="35" selection-end-line="39" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trie.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="28" column="56" lean-forward="true" selection-start-line="28" selection-start-column="56" selection-end-line="28" selection-end-column="56" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/postinglist.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="14" column="4" lean-forward="false" selection-start-line="14" selection-start-column="4" selection-end-line="14" selection-end-column="4" />
+        <state relative-caret-position="36">
+          <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <folding>
+            <element signature="e#45#62#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trie.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="4" column="16" lean-forward="false" selection-start-line="4" selection-start-column="16" selection-end-line="4" selection-end-column="16" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/util.h">
+    <entry file="file://$PROJECT_DIR$/postinglist.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="630">
-          <caret line="35" column="0" lean-forward="false" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
+        <state relative-caret-position="-36">
+          <caret line="4" column="16" lean-forward="false" selection-start-line="4" selection-start-column="16" selection-end-line="4" selection-end-column="16" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/util.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="15" column="2" lean-forward="false" selection-start-line="15" selection-start-column="2" selection-end-line="15" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/worker.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="233" column="12" lean-forward="true" selection-start-line="233" selection-start-column="12" selection-end-line="233" selection-end-column="12" />
+        <state relative-caret-position="684">
+          <caret line="38" column="0" lean-forward="false" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
           <folding>
-            <element signature="e#45#63#0" expanded="true" />
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
-          <caret line="591" column="76" lean-forward="false" selection-start-line="591" selection-start-column="76" selection-end-line="591" selection-end-column="76" />
+        <state relative-caret-position="162">
+          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+          <folding>
+            <element signature="e#45#63#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/util.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="14" column="20" lean-forward="false" selection-start-line="14" selection-start-column="20" selection-end-line="14" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lists.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-80">
+          <caret line="71" column="30" lean-forward="false" selection-start-line="71" selection-start-column="30" selection-end-line="71" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/worker.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="694">
+          <caret line="250" column="30" lean-forward="false" selection-start-line="250" selection-start-column="30" selection-end-line="250" selection-end-column="30" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>

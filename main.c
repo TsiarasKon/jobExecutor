@@ -134,6 +134,8 @@ int main(int argc, char *argv[]) {
                 perror("Worker failed to close pipe after forking");
                 return EC_PIPE;
             }
+            free(buffer);
+            free(docfile);
             return worker(w_id);
         }
     }
@@ -344,7 +346,7 @@ int main(int argc, char *argv[]) {
                         current = current->next;
                     }
                 }
-                destroyStringList(&worker_results[w_id]);
+                deleteStringList(&worker_results[w_id]);
             }
             // Read what's left from incomplete workers:
             while ((w_id = getNextIncomplete(completed, w)) != -1) {
@@ -579,6 +581,7 @@ int main(int argc, char *argv[]) {
                             }
                         }
                     }
+                    closedir(dirp);
                     if (rmdir(curr_dirname) < 0) {
                         perror("Error deleting log directory");
                         del_error = 1;
@@ -616,6 +619,9 @@ int main(int argc, char *argv[]) {
     }
     if (bufferptr != NULL) {
         free(bufferptr);
+    }
+    for (int i = 0; i < dirs_num; i++) {
+        free(dirnames[i]);
     }
     free(docfile);
     printf("jobExecutor has exited.\n");

@@ -1,5 +1,4 @@
 /home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/input_files/test
-
 /home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/input_files/anothertest
 /home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/input_files/test2/hey
 

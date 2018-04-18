@@ -2,7 +2,7 @@
 #define POSTINGLIST_H
 
 #include "trie.h"
-#include "util.h"
+#include "lists.h"
 
 #ifndef TYPEDEFS     // needed forward declarations, avoiding redefinitions
 #define TYPEDEFS

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "postinglist.h"
+#include "util.h"
 
 PostingListNode *createPostingListNode(int id, int line) {
     PostingListNode *listNode = malloc(sizeof(PostingListNode));
@@ -30,7 +31,7 @@ void deletePostingListNode(PostingListNode **listNode) {
     PostingListNode *next;
     while (current != NULL) {
         next = current->next;
-        destroyIntList(&current->lines);
+        deleteIntList(&current->lines);
         free(current);
         current = next;
     }

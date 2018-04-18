@@ -4,6 +4,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/jobExecutor.dir/trie.c.o"
   "CMakeFiles/jobExecutor.dir/postinglist.c.o"
   "CMakeFiles/jobExecutor.dir/util.c.o"
+  "CMakeFiles/jobExecutor.dir/lists.c.o"
   "jobExecutor.pdb"
   "jobExecutor"
 )

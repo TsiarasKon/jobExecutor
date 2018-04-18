@@ -59,6 +59,7 @@ int worker(int w_id) {
                 doc_count++;
             }
         }
+        closedir(dirp);
         curr_dirname = curr_dirname->next;
     }
 //    printf("Worker #%d docs: %d\n", w_id, doc_count);
@@ -143,9 +144,10 @@ int worker(int w_id) {
             fclose(fp);
             curr_doc++;
         }
+        closedir(dirp);
         curr_dirname = curr_dirname->next;
     }
-    destroyStringList(&dirnames);
+    deleteStringList(&dirnames);
 
     /* For debug purposes
     printf("Worker%d with pid %d has successfully loaded the following files:\n", w_id, pid);
@@ -219,7 +221,7 @@ int worker(int w_id) {
                     fprintf(logfp, " : %s", docnames[currPLNode->id]);
                     IntListNode *currLine = currPLNode->lines->first;
                     while (currLine != NULL && worker_timeout == 0) {
-                        //sleep(1);    /// For debug puposes
+                        //sleep(1);    /// For debug puposes - testing timeout
                         if (doclines_returned[currPLNode->id] == NULL) {
                             doclines_returned[currPLNode->id] = createPostingListNode(currPLNode->id, currLine->line);
                         } else if (existsInIntList(doclines_returned[currPLNode->id]->lines, currLine->line)) {
@@ -246,6 +248,7 @@ int worker(int w_id) {
                 }
             }
             free(doclines_returned);
+            deleteStringList(&terms);
             sprintf(msgbuf, "$");
             if (write(fd1, msgbuf, BUFSIZ) < 0) {
                 perror("Error writing to pipe");
@@ -357,6 +360,7 @@ int worker(int w_id) {
             free(docs[i][j]);
         }
         free(docs[i]);
+        free(docnames[i]);
     }
     printf("Worker%d with pid %d has exited.\n", w_id, pid);
     return exit_code;

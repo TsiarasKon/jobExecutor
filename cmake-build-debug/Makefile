@@ -123,6 +123,33 @@ jobExecutor/fast:
 	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/build
 .PHONY : jobExecutor/fast
 
+lists.o: lists.c.o
+
+.PHONY : lists.o
+
+# target to build an object file
+lists.c.o:
+	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/lists.c.o
+.PHONY : lists.c.o
+
+lists.i: lists.c.i
+
+.PHONY : lists.i
+
+# target to preprocess a source file
+lists.c.i:
+	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/lists.c.i
+.PHONY : lists.c.i
+
+lists.s: lists.c.s
+
+.PHONY : lists.s
+
+# target to generate assembly for a file
+lists.c.s:
+	$(MAKE) -f CMakeFiles/jobExecutor.dir/build.make CMakeFiles/jobExecutor.dir/lists.c.s
+.PHONY : lists.c.s
+
 main.o: main.c.o
 
 .PHONY : main.o
@@ -267,6 +294,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... jobExecutor"
+	@echo "... lists.o"
+	@echo "... lists.i"
+	@echo "... lists.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

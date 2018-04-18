@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "trie.h"
+#include "util.h"
 
 TrieNode* createTrieNode(char value, TrieNode *next) {
     TrieNode* nptr = malloc(sizeof(TrieNode));

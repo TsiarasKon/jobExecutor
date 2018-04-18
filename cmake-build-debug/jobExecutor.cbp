@@ -84,6 +84,12 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/lists.c">
+			<Option target="jobExecutor"/>
+		</Unit>
+		<Unit filename="/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/lists.h">
+			<Option target="jobExecutor"/>
+		</Unit>
 		<Unit filename="/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/main.c">
 			<Option target="jobExecutor"/>
 		</Unit>
