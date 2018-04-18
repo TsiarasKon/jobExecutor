@@ -30,6 +30,7 @@ int worker(int w_id) {
         return EC_PIPE;
     }
 
+    kill(getppid(), SIGCONT);
     char msgbuf[BUFSIZ];
     StringList *dirnames = createStringList();
     if (dirnames == NULL) {

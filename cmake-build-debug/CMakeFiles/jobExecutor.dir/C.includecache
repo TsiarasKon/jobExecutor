@@ -6,6 +6,20 @@
 
 #IncludeRegexTransform: 
 
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/lists.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+lists.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/lists.h
+util.h
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/util.h
+
+/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/lists.h
+
 /home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/main.c
 stdio.h
 -

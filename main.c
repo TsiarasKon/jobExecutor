@@ -15,21 +15,63 @@
 #include "paths.h"
 #include "util.h"
 
+int w = 0;
+int dirs_num = 0;
+pid_t *pidsptr;
+char **dirnamesptr;
+int *fd0sptr;
+
 int worker(int w_id);
 
-int makeProgramDirs(int w);
-int getNextIncomplete(const int completed[], int w);
+int makeProgramDirs(void);
+int getNextIncomplete(const int completed[]);
 
-static int timeout = 0;
+int timeout = 0;
 void timeout_handler(int signum) {
     timeout = 1;
 }
 
-pid_t exited_worker_pid = 0;
+void nothing_handler(int signum) {
+    // Used only to unpause
+}
+
 void child_handler(int signum) {
     int status;
-    exited_worker_pid = wait(&status);
+    pid_t exited_worker_pid = wait(&status);
     printf("Worker with pid %d killed with status %d.\n", exited_worker_pid, status);
+    if (exited_worker_pid != 0) {
+        signal(SIGCONT, nothing_handler);
+        int w_id = 0;
+        for (w_id = 0; w_id < w; w_id++) {
+            if (pidsptr[w_id] == exited_worker_pid) {
+                break;
+            }
+        }
+        pidsptr[w_id] = fork();
+        if (pidsptr[w_id] < 0) {
+            perror("fork");
+            exit(EC_FORK);
+        } else if (pidsptr[w_id] == 0) {
+            printf("Created new Worker%d with pid %d\n", w_id, getpid());
+            exit(worker(w_id));
+        }
+        char pipebuffer[BUFSIZ];
+        alarm(1);   // just in case worker sends the signal before jobExecutor calls pause()
+        pause();
+        timeout = 0;    // reset timeout which was unintentionally changed by timeout_handler()
+        for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {
+            strcpy(pipebuffer, dirnamesptr[curr_dir]);
+            if (write(fd0sptr[w_id], pipebuffer, BUFSIZ) == -1) {
+                perror("Error writing to pipe");
+                exit(EC_PIPE);
+            }
+        }
+        strcpy(pipebuffer, "$");
+        if (write(fd0sptr[w_id], pipebuffer, BUFSIZ) == -1) {
+            perror("Error writing to pipe");
+            exit(EC_PIPE);
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -37,7 +79,6 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Invalid arguments. Please run \"$ ./jobExecutor -d docfile -w numWorkers\"\n");
         return EC_ARG;
     }
-    int w = 0;
     char *docfile = NULL;
     int option;
     while ((option = getopt(argc, argv,"d:w:")) != -1) {
@@ -64,7 +105,6 @@ int main(int argc, char *argv[]) {
     }
     size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
     char *buffer = NULL, *bufferptr = NULL;
-    int dirs_num = 0;
     while (getline(&buffer, &bufsize, fp) != -1) {
         if (buffer[0] == '\n')  {     // ignore empty lines
             continue;
@@ -81,12 +121,13 @@ int main(int argc, char *argv[]) {
     }
 
     int exit_code;
-    if ((exit_code = makeProgramDirs(w)) != EC_OK) {
+    if ((exit_code = makeProgramDirs()) != EC_OK) {
         fprintf(stderr, "Unable to create folders.\n");
         return exit_code;
     }
 
     pid_t pids[w];
+    pidsptr = pids;
     struct pollfd pfd1s[w];
     for (int i = 0; i < w; i++) {
         pfd1s[i].events = POLLIN;
@@ -141,6 +182,7 @@ int main(int argc, char *argv[]) {
     }
 
     char *dirnames[dirs_num];
+    dirnamesptr = dirnames;
     if ((fp = fopen(docfile, "r")) == NULL) {
         perror("fopen");
         return EC_FILE;
@@ -170,6 +212,7 @@ int main(int argc, char *argv[]) {
     fclose(fp);
 
     int fd0s[w];
+    fd0sptr = fd0s;
     for(int w_id = 0; w_id < w; w_id++) {
         sprintf(fifo0_name, "%s/Worker%d_0", PIPEPATH, w_id);
         fd0s[w_id] = open(fifo0_name, O_WRONLY);
@@ -200,35 +243,6 @@ int main(int argc, char *argv[]) {
 
     char *command, msgbuf[BUFSIZ + 1];
     while (1) {
-//        if (exited_worker_pid != 0) {
-//            int w_id = 0;
-//            for (w_id = 0; w_id < w; w_id++) {
-//                if (pids[w_id] == exited_worker_pid) {
-//                    break;
-//                }
-//            }
-//            pids[w_id] = fork();
-//            if (pids[w_id] < 0) {
-//                perror("fork");
-//                return EC_FORK;
-//            } else if (pids[w_id] == 0) {
-//                printf("Created Worker%d with pid %d\n", w_id, getpid());
-//                return worker(w_id);
-//            }
-//            for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {
-//                strcpy(pipebuffer, dirnames[curr_dir]);
-//                if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
-//                    perror("Error writing to pipe");
-//                    return EC_PIPE;
-//                }
-//            }
-//            strcpy(pipebuffer, "$");
-//            if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
-//                perror("Error writing to pipe");
-//                return EC_PIPE;
-//            }
-//            exited_worker_pid = 0;
-//        }
         printf("\n");
         // Until "/exit" is given, read current line and attempt to execute it as a command
         printf("Type a command:\n");
@@ -303,7 +317,7 @@ int main(int argc, char *argv[]) {
             if (deadline != 0) {
                 alarm((unsigned int) deadline);
             }
-            while ((w_id = getNextIncomplete(completed, w)) != -1 && timeout == 0) {
+            while ((w_id = getNextIncomplete(completed)) != -1 && timeout == 0) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     if (errno == EINTR) {       // timed out
                         break;
@@ -349,7 +363,7 @@ int main(int argc, char *argv[]) {
                 deleteStringList(&worker_results[w_id]);
             }
             // Read what's left from incomplete workers:
-            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+            while ((w_id = getNextIncomplete(completed)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
                     return EC_PIPE;
@@ -386,7 +400,7 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+            while ((w_id = getNextIncomplete(completed)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
                     return EC_PIPE;
@@ -442,7 +456,7 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+            while ((w_id = getNextIncomplete(completed)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
                     return EC_PIPE;
@@ -492,7 +506,7 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+            while ((w_id = getNextIncomplete(completed)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
                     return EC_PIPE;
@@ -539,7 +553,7 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextIncomplete(completed, w)) != -1) {
+            while ((w_id = getNextIncomplete(completed)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
                     return EC_PIPE;
@@ -628,7 +642,7 @@ int main(int argc, char *argv[]) {
     return exit_code;
 }
 
-int makeProgramDirs(int w) {
+int makeProgramDirs(void) {
     if (mkdir(PIPEPATH, 0777) < 0 && errno != EEXIST) {
         perror("mkdir");
         return EC_DIR;
@@ -648,7 +662,7 @@ int makeProgramDirs(int w) {
     return EC_OK;
 }
 
-int getNextIncomplete(const int completed[], int w) {
+int getNextIncomplete(const int completed[]) {
     for (int i = 0; i < w; i++) {
         if (completed[i] == 0) {
             return i;
