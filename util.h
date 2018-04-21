@@ -9,6 +9,7 @@ enum ErrorCodes {
     EC_FORK,     // Error while forking
     EC_PIPE,     // Error related to pipes
     EC_MEM,      // Failed to allocate memory
+    EC_DEAD,     // Return value of worker if jobExecutor has died
     EC_UNKNOWN   // An unexpected error
 };
 

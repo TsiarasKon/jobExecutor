@@ -35,44 +35,12 @@ void nothing_handler(int signum) {
     // Used only to unpause
 }
 
-void child_handler(int signum) {
-    int status;
-    pid_t exited_worker_pid = wait(&status);
-    printf("Worker with pid %d killed with status %d.\n", exited_worker_pid, status);
-    if (exited_worker_pid != 0) {
-        signal(SIGCONT, nothing_handler);
-        int w_id = 0;
-        for (w_id = 0; w_id < w; w_id++) {
-            if (pidsptr[w_id] == exited_worker_pid) {
-                break;
-            }
-        }
-        pidsptr[w_id] = fork();
-        if (pidsptr[w_id] < 0) {
-            perror("fork");
-            exit(EC_FORK);
-        } else if (pidsptr[w_id] == 0) {
-            printf("Created new Worker%d with pid %d\n", w_id, getpid());
-            exit(worker(w_id));
-        }
-        char pipebuffer[BUFSIZ];
-        alarm(1);   // just in case worker sends the signal before jobExecutor calls pause()
-        pause();
-        timeout = 0;    // reset timeout which was unintentionally changed by timeout_handler()
-        for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {
-            strcpy(pipebuffer, dirnamesptr[curr_dir]);
-            if (write(fd0sptr[w_id], pipebuffer, BUFSIZ) == -1) {
-                perror("Error writing to pipe");
-                exit(EC_PIPE);
-            }
-        }
-        strcpy(pipebuffer, "$");
-        if (write(fd0sptr[w_id], pipebuffer, BUFSIZ) == -1) {
-            perror("Error writing to pipe");
-            exit(EC_PIPE);
-        }
-    }
+void cleanup(int signum) {
+    printf("Hello there!\n");
+    //goto quit;
 }
+
+void child_handler(int signum);
 
 int main(int argc, char *argv[]) {
     if (argc != 5) {
@@ -90,6 +58,7 @@ int main(int argc, char *argv[]) {
             case 'w' : w = atoi(optarg);
                 break;
             default:
+                fprintf(stderr, "Invalid arguments. Please run \"$ ./jobExecutor -d docfile -w numWorkers\"\n");
                 return EC_ARG;
         }
     }
@@ -240,9 +209,12 @@ int main(int argc, char *argv[]) {
 
     signal(SIGCHLD, child_handler);
     signal(SIGALRM, timeout_handler);
+    signal(SIGTERM, cleanup);
+    signal(SIGINT, cleanup);
+    signal(SIGQUIT, cleanup);
 
     char *command, msgbuf[BUFSIZ + 1];
-    while (1) {
+    while (1) {             // main program loop
         printf("\n");
         // Until "/exit" is given, read current line and attempt to execute it as a command
         printf("Type a command:\n");
@@ -315,7 +287,7 @@ int main(int argc, char *argv[]) {
             int w_responded = 0;
             timeout = 0;
             if (deadline != 0) {
-                alarm((unsigned int) deadline);
+                alarm((unsigned int) deadline);   // when the time for seach is up johbExecutor will get a SIGALRM
             }
             while ((w_id = getNextIncomplete(completed)) != -1 && timeout == 0) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
@@ -344,7 +316,7 @@ int main(int argc, char *argv[]) {
             errno = 0;
             if (timeout) {
                 for (w_id = 0; w_id < w; w_id++) {
-                    kill(pids[w_id], SIGUSR1);
+                    kill(pids[w_id], SIGUSR1);      // signal workers to stop executing the search query
                     if (!completed[w_id]) {
                         printf("Worker%d failed to respond on time.\n", w_id);
                     }
@@ -362,7 +334,7 @@ int main(int argc, char *argv[]) {
                 }
                 deleteStringList(&worker_results[w_id]);
             }
-            // Read what's left from incomplete workers:
+            // Read what's left from incomplete workers in order to clear the pipes:
             while ((w_id = getNextIncomplete(completed)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
@@ -669,4 +641,43 @@ int getNextIncomplete(const int completed[]) {
         }
     }
     return -1;
+}
+
+void child_handler(int signum) {   // Used when a worker is terminated to recreate it
+    int status;
+    pid_t terminated_worker_pid = wait(&status);
+    printf("Worker with pid %d killed with status %d.\n", terminated_worker_pid, status);
+    if (terminated_worker_pid != 0) {
+        int w_id = 0;
+        for (w_id = 0; w_id < w; w_id++) {      // find terminated worker's w_id
+            if (pidsptr[w_id] == terminated_worker_pid) {
+                break;
+            }
+        }
+        pidsptr[w_id] = fork();
+        if (pidsptr[w_id] < 0) {
+            perror("fork");
+            exit(EC_FORK);
+        } else if (pidsptr[w_id] == 0) {
+            printf("Created new Worker%d with pid %d\n", w_id, getpid());
+            exit(worker(w_id));
+        }
+        char pipebuffer[BUFSIZ];
+        signal(SIGCONT, nothing_handler);
+        alarm(1);       // just in case worker sends the signal before jobExecutor calls pause()
+        pause();        // wait for new worker to open its pipe before writing to it
+        timeout = 0;    // reset timeout which was unintentionally changed by timeout_handler()
+        for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {     // send its directories
+            strcpy(pipebuffer, dirnamesptr[curr_dir]);
+            if (write(fd0sptr[w_id], pipebuffer, BUFSIZ) == -1) {
+                perror("Error writing to pipe");
+                exit(EC_PIPE);
+            }
+        }
+        strcpy(pipebuffer, "$");
+        if (write(fd0sptr[w_id], pipebuffer, BUFSIZ) == -1) {
+            perror("Error writing to pipe");
+            exit(EC_PIPE);
+        }
+    }
 }
