@@ -16,6 +16,11 @@ void worker_timeout_handler(int signum) {
     worker_timeout = 1;
 }
 
+static int workerKilled = 0;
+void worker_cleanup(int signum) {
+    workerKilled = 1;
+}
+
 int worker(int w_id) {
     signal(SIGUSR1, worker_timeout_handler);
     pid_t pid = getpid();
@@ -167,16 +172,26 @@ int worker(int w_id) {
     int strings_found_len = 0;
     char logfile[PATH_MAX + 1];
     sprintf(logfile, "%s/Worker%d/%d.log", LOGPATH, w_id, pid);
-    FILE *logfp = fopen(logfile, "w");
+    FILE *logfp = fopen(logfile, "a");
     if (logfp == NULL) {
         perror("fopen");
         return EC_FILE;
     }
 
+    struct sigaction act;
+    memset(&act, 0, sizeof(act));
+    act.sa_handler = worker_cleanup;
+    sigaction(SIGINT,  &act, 0);
+    sigaction(SIGTERM, &act, 0);
+    sigaction(SIGQUIT, &act, 0);
+
     char *command, *readbufptr, *readbuf = NULL, *writebuf = NULL;
     size_t msgsize;
-    while (1) {
+    while (!workerKilled) {
         if (read(fd0, &msgsize, sizeof(size_t)) < 0) {      // read size of command
+            if (errno == EINTR) {
+                break;
+            }
             perror("Error reading from pipe");
             return EC_PIPE;
         }
@@ -419,6 +434,9 @@ int worker(int w_id) {
     if (exit_code == EC_UNKNOWN) {
         fprintf(stderr, "Illegal command '%s' arrived to Worker%d with pid %d. The worker will now terminate.\n", command, w_id, pid);
     }
+    if (workerKilled) {
+        fprintf(stderr, "Worker%d with pid %d was killed.\n", w_id, pid);
+    }
 
     if (bufferptr != NULL) {
         free(bufferptr);
@@ -426,9 +444,6 @@ int worker(int w_id) {
     if (readbuf != NULL) {
         free(readbuf);
     }
-//    if (writebuf != NULL) {
-//        free(writebuf);
-//    }
     deleteStringList(&strings_found);
     if (fclose(logfp) < 0) {
         perror("fclose");

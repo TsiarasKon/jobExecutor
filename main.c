@@ -26,7 +26,7 @@ int worker(int w_id);
 int makeProgramDirs(void);
 int getNextIncomplete(const int completed[]);
 
-int timeout = 0;
+static int timeout = 0;
 void timeout_handler(int signum) {
     timeout = 1;
 }
@@ -35,9 +35,9 @@ void nothing_handler(int signum) {
     // Used only to unpause
 }
 
-void cleanup(int signum) {
-    printf("Hello there!\n");
-    //goto quit;
+static int executorKilled = 0;
+void executor_cleanup(int signum) {
+    executorKilled = 1;
 }
 
 void child_handler(int signum);
@@ -206,17 +206,23 @@ int main(int argc, char *argv[]) {
 
     signal(SIGCHLD, child_handler);
     signal(SIGALRM, timeout_handler);
-    signal(SIGTERM, cleanup);
-    signal(SIGINT, cleanup);
-    signal(SIGQUIT, cleanup);
+    struct sigaction act;
+    memset(&act, 0, sizeof(act));
+    act.sa_handler = executor_cleanup;
+    sigaction(SIGINT,  &act, 0);
+    sigaction(SIGTERM, &act, 0);
+    sigaction(SIGQUIT, &act, 0);
 
     char *command, *writebuf = NULL, *readbuf = NULL, *readbufptr;
     size_t msgsize;
-    while (1) {             // main program loop
+    while (!executorKilled) {             // main program loop
         printf("\n");
         // Until "/exit" is given, read current line and attempt to execute it as a command
         printf("Type a command:\n");
         getline(&buffer, &bufsize, stdin);
+        if (executorKilled) {
+            break;
+        }
         msgsize = strlen(buffer) + 1;
         writebuf = realloc(writebuf, msgsize);
         if (writebuf == NULL) {
@@ -667,8 +673,19 @@ int main(int argc, char *argv[]) {
         }
         buffer = bufferptr;
     }
+    if (executorKilled) {
+        fprintf(stderr, "jobExecutor was killed\n");
+        signal(SIGCHLD, NULL);      // don't want to invoke SIGCHLD handler at this point
+        for (int w_id = 0; w_id < w; w_id++) {
+            kill(pids[w_id], SIGTERM);
+        }
+        for (int w_id = 0; w_id < w; w_id++) {
+            waitpid(pids[w_id], NULL, 0);
+        }
+    }
 
-    for(int w_id = 0; w_id < w; w_id++) {
+
+    for (int w_id = 0; w_id < w; w_id++) {
         if (close(fd0s[w_id]) < 0 || close(pfd1s[w_id].fd) < 0) {
             perror("Error closing pipes");
         }
