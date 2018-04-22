@@ -12,6 +12,33 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5307b7c2-1bf6-403e-b438-79efefaada27" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31179.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31182.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31219.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31372.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31386.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31389.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31394.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31397.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31486.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker0/31492.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker1/31180.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker1/31220.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker1/31374.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker1/31387.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker1/31395.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker1/31398.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker1/31487.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker1/31493.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker2/31181.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker2/31221.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker2/31375.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker2/31388.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker2/31396.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker2/31488.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/log/Worker2/31494.log" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jobExecutor" afterPath="$PROJECT_DIR$/jobExecutor" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.o" afterPath="$PROJECT_DIR$/main.o" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.c" afterPath="$PROJECT_DIR$/main.c" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -23,14 +50,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.47263682">
+    <splitter split-orientation="horizontal" split-proportion="0.5190713">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-783">
-                  <caret line="697" column="30" lean-forward="true" selection-start-line="697" selection-start-column="30" selection-end-line="697" selection-end-column="30" />
+                <state relative-caret-position="1485">
+                  <caret line="662" column="69" lean-forward="false" selection-start-line="662" selection-start-column="69" selection-end-line="662" selection-end-column="69" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -65,8 +92,8 @@
           <file leaf-file-name="worker.c" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/worker.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="5144">
-                  <caret line="443" column="26" lean-forward="true" selection-start-line="443" selection-start-column="26" selection-end-line="443" selection-end-column="26" />
+                <state relative-caret-position="14">
+                  <caret line="179" column="0" lean-forward="false" selection-start-line="179" selection-start-column="0" selection-end-line="179" selection-end-column="0" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -124,8 +151,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>exit_c</find>
-      <find>intl</find>
       <find>stringl</find>
       <find>SIGCONT</find>
       <find>SIGC</find>
@@ -154,12 +179,16 @@
       <find>msgsize</find>
       <find>readbuf</find>
       <find>&quot;\&quot;%s\&quot; %d %s&quot;, docnames[currPLNode-&gt;id], currLine-&gt;line, docs[currPLNode-&gt;id][currLine-&gt;line]</find>
+      <find>poll(pfd1s, (nfds_t) w, -1) &lt; 0</find>
+      <find>while (completed[w_id] == 0 &amp;&amp; w_id &lt; w)</find>
     </findStrings>
     <replaceStrings>
       <replace>pid</replace>
       <replace>perror(&quot;malloc&quot;);</replace>
       <replace>String</replace>
       <replace>if (errno == EINTR) {</replace>
+      <replace>poll(pfd1s, (nfds_t) w, -1) &lt; 0 &amp;&amp; errno != EINTR</replace>
+      <replace>while (w_id &lt; w &amp;&amp; completed[w_id] == 0)</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -294,12 +323,12 @@
       <workItem from="1524325563815" duration="370000" />
       <workItem from="1524385055172" duration="227000" />
       <workItem from="1524385396046" duration="15952000" />
-      <workItem from="1524412915124" duration="6840000" />
+      <workItem from="1524412915124" duration="10716000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="188267000" />
+    <option name="totallyTimeSpent" value="192143000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1857" height="1092" extended-state="6" />
@@ -740,20 +769,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/worker.c">
+    <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5144">
-          <caret line="443" column="26" lean-forward="true" selection-start-line="443" selection-start-column="26" selection-end-line="443" selection-end-column="26" />
+        <state relative-caret-position="1485">
+          <caret line="662" column="69" lean-forward="false" selection-start-line="662" selection-start-column="69" selection-end-line="662" selection-end-column="69" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.c">
+    <entry file="file://$PROJECT_DIR$/worker.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-783">
-          <caret line="697" column="30" lean-forward="true" selection-start-line="697" selection-start-column="30" selection-end-line="697" selection-end-column="30" />
+        <state relative-caret-position="14">
+          <caret line="179" column="0" lean-forward="false" selection-start-line="179" selection-start-column="0" selection-end-line="179" selection-end-column="0" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>

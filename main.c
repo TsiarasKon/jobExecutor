@@ -16,15 +16,11 @@
 #include "util.h"
 
 int w = 0;
-int dirs_num = 0;
-pid_t *pidsptr;
-char **dirnamesptr;
-int *fd0sptr;
 
 int worker(int w_id);
 
 int makeProgramDirs(void);
-int getNextIncomplete(const int completed[]);
+int getNextZero(const int *arr);
 
 static int timeout = 0;
 void timeout_handler(int signum) {
@@ -40,6 +36,8 @@ void executor_cleanup(int signum) {
     executorKilled = 1;
 }
 
+pid_t *pidsptr;
+int *child_aliveptr;
 void child_handler(int signum);
 
 int main(int argc, char *argv[]) {
@@ -74,6 +72,7 @@ int main(int argc, char *argv[]) {
     }
     size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
     char *buffer = NULL, *bufferptr = NULL;
+    int dirs_num = 0;
     while (getline(&buffer, &bufsize, fp) != -1) {
         if (buffer[0] == '\n')  {     // ignore empty lines
             continue;
@@ -97,6 +96,8 @@ int main(int argc, char *argv[]) {
 
     pid_t pids[w];
     pidsptr = pids;
+    int child_alive[w];
+    child_aliveptr = child_alive;
     struct pollfd pfd1s[w];
     for (int i = 0; i < w; i++) {
         pfd1s[i].events = POLLIN;
@@ -144,10 +145,10 @@ int main(int argc, char *argv[]) {
             perror("Error opening pipe");
             return EC_PIPE;
         }
+        child_alive[w_id] = 1;
     }
 
     char *dirnames[dirs_num];
-    dirnamesptr = dirnames;
     if ((fp = fopen(docfile, "r")) == NULL) {
         perror("fopen");
         return EC_FILE;
@@ -177,7 +178,6 @@ int main(int argc, char *argv[]) {
     fclose(fp);
 
     int fd0s[w];
-    fd0sptr = fd0s;
     for(int w_id = 0; w_id < w; w_id++) {
         sprintf(fifo0_name, "%s/Worker%d_0", PIPEPATH, w_id);
         fd0s[w_id] = open(fifo0_name, O_WRONLY);
@@ -222,6 +222,56 @@ int main(int argc, char *argv[]) {
         getline(&buffer, &bufsize, stdin);
         if (executorKilled) {
             break;
+        }
+        int tw_id;
+        while ((tw_id = getNextZero(child_alive)) >= 0) {
+            pid_t terminated_worker_pid = pids[tw_id];
+            if (terminated_worker_pid != 0) {
+                pids[tw_id] = fork();
+                if (pids[tw_id] < 0) {
+                    perror("fork");
+                    return EC_FORK;
+                } else if (pids[tw_id] == 0) {
+                    printf("Created new Worker%d with pid %d\n", tw_id, getpid());
+                    // free jobExecutor's resources:
+                    for (int w_id = 0; w_id < w; w_id++) {
+                        if (close(fd0s[w_id]) < 0 || close(pfd1s[w_id].fd) < 0) {
+                            perror("Error closing pipes");
+                        }
+                    }
+                    if (bufferptr != NULL) {
+                        free(bufferptr);
+                    }
+                    if (writebuf != NULL) {
+                        free(writebuf);
+                    }
+                    if (readbuf != NULL) {
+                        free(readbuf);
+                    }
+                    for (int i = 0; i < dirs_num; i++) {
+                        free(dirnames[i]);
+                    }
+                    free(docfile);
+                    return worker(tw_id);
+                }
+                signal(SIGCONT, nothing_handler);
+                alarm(1);       // just in case worker sends the signal before jobExecutor calls pause()
+                pause();        // wait for new worker to open its pipe before writing to it
+                for (int curr_dir = tw_id; curr_dir < dirs_num; curr_dir += w) {     // send its directories
+                    memset(pathbuf, 0, PATH_MAX + 1);
+                    strcpy(pathbuf, dirnames[curr_dir]);
+                    if (write(fd0s[tw_id], pathbuf, PATH_MAX + 1) == -1) {
+                        perror("Error writing to pipe");
+                        return EC_PIPE;
+                    }
+                }
+                strcpy(pathbuf, "$");
+                if (write(fd0s[tw_id], pathbuf, PATH_MAX + 1) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+            }
+            child_alive[tw_id] = 1;
         }
         msgsize = strlen(buffer) + 1;
         writebuf = realloc(writebuf, msgsize);
@@ -301,17 +351,17 @@ int main(int argc, char *argv[]) {
             int w_responded = 0;
             timeout = 0;
             if (deadline != 0) {
-                alarm((unsigned int) deadline);   // when the time for seach is up johbExecutor will get a SIGALRM
+                alarm((unsigned int) deadline);   // when the time for search is up jobExecutor will get a SIGALRM
             }
-            while ((w_id = getNextIncomplete(completed)) != -1 && timeout == 0) {
-                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+            while ((w_id = getNextZero(completed)) != -1 && timeout == 0) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     if (errno == EINTR) {       // timed out
                         break;
                     }
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (completed[w_id] == 0 && w_id < w) {
+                while (w_id < w && completed[w_id] == 0) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
                         if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
@@ -369,12 +419,12 @@ int main(int argc, char *argv[]) {
                 deleteStringList(&worker_results[w_id]);
             }
             // Read what's left from incomplete workers in order to clear the pipes:
-            while ((w_id = getNextIncomplete(completed)) != -1) {
-                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+            while ((w_id = getNextZero(completed)) != -1) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (completed[w_id] == 0 && w_id < w) {
+                while (w_id < w && completed[w_id] == 0) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
                         if (read(pfd1s[w_id].fd, readbuf, 1) < 0) {     ///
                             perror("Error reading from pipe");
@@ -410,12 +460,12 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextIncomplete(completed)) != -1) {
-                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+            while ((w_id = getNextZero(completed)) != -1) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (completed[w_id] == 0 && w_id < w) {
+                while (w_id < w && completed[w_id] == 0) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
                         if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
@@ -481,12 +531,12 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextIncomplete(completed)) != -1) {
-                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+            while ((w_id = getNextZero(completed)) != -1) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (completed[w_id] == 0 && w_id < w) {
+                while (w_id < w && completed[w_id] == 0) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
                         if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
@@ -546,12 +596,12 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextIncomplete(completed)) != -1) {
-                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+            while ((w_id = getNextZero(completed)) != -1) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (completed[w_id] == 0 && w_id < w) {
+                while (w_id < w && completed[w_id] == 0) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
                         if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
@@ -609,12 +659,12 @@ int main(int argc, char *argv[]) {
                 completed[w_id] = 0;
             }
             int strings_found;
-            while ((w_id = getNextIncomplete(completed)) != -1) {
-                if (poll(pfd1s, (nfds_t) w, -1) < 0) {
+            while ((w_id = getNextZero(completed)) != -1) {
+                if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (completed[w_id] == 0 && w_id < w) {
+                while (w_id < w && completed[w_id] == 0) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
                         if (read(pfd1s[w_id].fd, &strings_found, sizeof(int)) < 0) {
                             perror("Error reading from pipe");
@@ -735,9 +785,9 @@ int makeProgramDirs(void) {
     return EC_OK;
 }
 
-int getNextIncomplete(const int completed[]) {
+int getNextZero(const int *arr) {
     for (int i = 0; i < w; i++) {
-        if (completed[i] == 0) {
+        if (arr[i] == 0) {
             return i;
         }
     }
@@ -746,42 +796,13 @@ int getNextIncomplete(const int completed[]) {
 
 void child_handler(int signum) {   // Used when a worker is terminated to recreate it
     pid_t terminated_worker_pid = wait(NULL);
-    char pathbuffer[PATH_MAX + 1];
-//    strcpy(pathbuffer, "Worker with pid ");
-//    write(STDOUT_FILENO, pathbuffer, strlen(pathbuffer) + 1);
-//    strcpy(pathbuffer, );
-//    write(STDOUT_FILENO, &terminated_worker_pid, sizeof(terminated_worker_pid));
-//    strcpy(pathbuffer, " was killed.\n");
-    write(STDOUT_FILENO, pathbuffer, strlen(pathbuffer) + 1);
     if (terminated_worker_pid != 0) {
         int w_id = 0;
         for (w_id = 0; w_id < w; w_id++) {      // find terminated worker's w_id
             if (pidsptr[w_id] == terminated_worker_pid) {
+                child_aliveptr[w_id] = 0;
                 break;
             }
-        }
-        pidsptr[w_id] = fork();
-        if (pidsptr[w_id] < 0) {
-            perror("fork");
-            exit(EC_FORK);
-        } else if (pidsptr[w_id] == 0) {
-            printf("Created new Worker%d with pid %d\n", w_id, getpid());
-            exit(worker(w_id));
-        }
-        signal(SIGCONT, nothing_handler);
-        alarm(1);       // just in case worker sends the signal before jobExecutor calls pause()
-        pause();        // wait for new worker to open its pipe before writing to it
-        for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {     // send its directories
-            strcpy(pathbuffer, dirnamesptr[curr_dir]);
-            if (write(fd0sptr[w_id], pathbuffer, PATH_MAX + 1) == -1) {
-                perror("Error writing to pipe");
-                exit(EC_PIPE);
-            }
-        }
-        strcpy(pathbuffer, "$");
-        if (write(fd0sptr[w_id], pathbuffer, PATH_MAX + 1) == -1) {
-            perror("Error writing to pipe");
-            exit(EC_PIPE);
         }
     }
 }
