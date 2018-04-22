@@ -16,8 +16,6 @@ void worker_timeout_handler(int signum) {
     worker_timeout = 1;
 }
 
-/// handle fatal sigs
-
 int worker(int w_id) {
     signal(SIGUSR1, worker_timeout_handler);
     pid_t pid = getpid();
@@ -25,7 +23,7 @@ int worker(int w_id) {
     char fifo0[PATH_MAX], fifo1[PATH_MAX];
     sprintf(fifo0, "%s/Worker%d_0", PIPEPATH, w_id);
     sprintf(fifo1, "%s/Worker%d_1", PIPEPATH, w_id);
-    int fd1 = open(fifo1, O_WRONLY | O_NONBLOCK);
+    int fd1 = open(fifo1, O_WRONLY);
     int fd0 = open(fifo0, O_RDONLY);
     if (fd0 < 0 || fd1 < 0) {
         perror("Error opening pipes");
@@ -33,16 +31,16 @@ int worker(int w_id) {
     }
 
     kill(getppid(), SIGCONT);
-    char msgbuf[BUFSIZ];
+    char pathbuffer[PATH_MAX + 1];
     StringList *dirnames = createStringList();
     if (dirnames == NULL) {
         return EC_MEM;
     }
-    while (read(fd0, msgbuf, BUFSIZ) > 0) {
-        if (*msgbuf == '$') {
+    while (read(fd0, pathbuffer, PATH_MAX + 1) > 0) {
+        if (*pathbuffer == '$') {
             break;
         }
-        if (appendStringListNode(dirnames, msgbuf) != EC_OK) {
+        if (appendStringListNode(dirnames, pathbuffer) != EC_OK) {
             return EC_MEM;
         }
     }
@@ -169,19 +167,31 @@ int worker(int w_id) {
     int strings_found_len = 0;
     char logfile[PATH_MAX + 1];
     sprintf(logfile, "%s/Worker%d/%d.log", LOGPATH, w_id, pid);
-    FILE *logfp = fopen(logfile, "a");
+    FILE *logfp = fopen(logfile, "w");
     if (logfp == NULL) {
         perror("fopen");
         return EC_FILE;
     }
-    char *command;
+
+    char *command, *readbufptr, *readbuf = NULL, *writebuf = NULL;
+    size_t msgsize;
     while (1) {
-        if (read(fd0, msgbuf, BUFSIZ) < 0) {      // should only be one line
+        if (read(fd0, &msgsize, sizeof(size_t)) < 0) {      // read size of command
             perror("Error reading from pipe");
             return EC_PIPE;
         }
-        strtok(msgbuf, "\n");     // remove trailing newline character
-        command = strtok(msgbuf, " \t");
+        readbuf = realloc(readbuf, msgsize);
+        if (readbuf == NULL) {
+            perror("realloc");
+            return EC_MEM;
+        }
+        readbufptr = readbuf;
+        if (read(fd0, readbuf, msgsize) < 0) {      // should only be one line
+            perror("Error reading from pipe");
+            return EC_PIPE;
+        }
+        strtok(readbuf, "\n");     // remove trailing newline character
+        command = strtok(readbuf, " \t");
         if (!strcmp(command, cmds[0])) {          // search
             worker_timeout = 0;
             char *keyword = strtok(NULL, " \t");
@@ -211,17 +221,17 @@ int worker(int w_id) {
             while (currTerm != NULL && worker_timeout == 0) {
                 PostingList *keywordPostingList = getPostingList(trie, currTerm->string);
                 if (keywordPostingList == NULL) {     // current term doesn't exist in trie
-                    fprintf(logfp, "%s:%s:%s:\n", getCurrentTime(), cmds[0] + 1, currTerm->string);
+                    fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[0] + 1, currTerm->string);
                     currTerm = currTerm->next;
                     continue;
                 }
                 if (!existsInStringList(strings_found, currTerm->string)) {
                     strings_found_len++;
                 }
-                fprintf(logfp, "%s:%s:%s", getCurrentTime(), cmds[0] + 1, currTerm->string);
+                fprintf(logfp, "%s : %s : %s", getCurrentTime(), cmds[0] + 1, currTerm->string);
                 PostingListNode *currPLNode = keywordPostingList->first;
                 while (currPLNode != NULL) {
-                    fprintf(logfp, ":\"%s\"", docnames[currPLNode->id]);
+                    fprintf(logfp, " : \"%s\"", docnames[currPLNode->id]);
                     IntListNode *currLine = currPLNode->lines->first;
                     while (currLine != NULL && worker_timeout == 0) {
                         //sleep(1);    /// For debug puposes - testing timeout
@@ -233,11 +243,20 @@ int worker(int w_id) {
                             continue;
                         }
                         appendIntListNode(doclines_returned[currPLNode->id]->lines, currLine->line);
-                        sprintf(msgbuf, "\"%s\" %d %s", docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]);
-                        if (write(fd1, msgbuf, BUFSIZ) < 0) {
+                        if (asprintf(&writebuf, "\"%s\" %d %s", docnames[currPLNode->id], currLine->line, docs[currPLNode->id][currLine->line]) < 0) {
+                            perror("asprintf");
+                            return EC_MEM;
+                        }
+                        msgsize = strlen(writebuf) + 1;
+                        if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error writing to pipe");
                             return EC_PIPE;
                         }
+                        if (write(fd1, writebuf, msgsize) < 0) {
+                            perror("Error writing to pipe");
+                            return EC_PIPE;
+                        }
+                        free(writebuf);
                         currLine = currLine->next;
                     }
                     currPLNode = currPLNode->next;
@@ -252,11 +271,20 @@ int worker(int w_id) {
             }
             free(doclines_returned);
             deleteStringList(&terms);
-            sprintf(msgbuf, "$");
-            if (write(fd1, msgbuf, BUFSIZ) < 0) {
+            if (asprintf(&writebuf, "$") < 0) {
+                perror("asprintf");
+                return EC_MEM;
+            }
+            msgsize = strlen(writebuf) + 1;
+            if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
+            if (write(fd1, writebuf, msgsize) < 0) {
+                perror("Error writing to pipe");
+                return EC_PIPE;
+            }
+            free(writebuf);
         } else if (!strcmp(command, cmds[1])) {       // maxcount
             char *keyword = strtok(NULL, " \t");
             if (keyword == NULL) {
@@ -265,12 +293,21 @@ int worker(int w_id) {
             }
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
-                fprintf(logfp, "%s:%s:%s:\n", getCurrentTime(), cmds[1] + 1, keyword);
-                sprintf(msgbuf, "0");
-                if (write(fd1, msgbuf, BUFSIZ) < 0) {
+                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
+                if (asprintf(&writebuf, "0") < 0) {
+                    perror("asprintf");
+                    return EC_MEM;
+                }
+                msgsize = strlen(writebuf) + 1;
+                if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
                 }
+                if (write(fd1, writebuf, msgsize) < 0) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+                free(writebuf);
                 continue;
             }
             PostingListNode *current = keywordPostingList->first;
@@ -284,12 +321,21 @@ int worker(int w_id) {
                 }
                 current = current->next;
             }
-            fprintf(logfp, "%s:%s:%s:\"%s\"\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id]);
-            sprintf(msgbuf, "%d %s", max_tf, docnames[max_id]);
-            if (write(fd1, msgbuf, BUFSIZ) < 0) {
+            fprintf(logfp, "%s : %s : %s : \"%s\" (%d)\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id], max_tf);
+            if (asprintf(&writebuf, "%d %s", max_tf, docnames[max_id]) < 0) {
+                perror("asprintf");
+                return EC_MEM;
+            }
+            msgsize = strlen(writebuf) + 1;
+            if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
+            if (write(fd1, writebuf, msgsize) < 0) {
+                perror("Error writing to pipe");
+                return EC_PIPE;
+            }
+            free(writebuf);
         } else if (!strcmp(command, cmds[2])) {       // mincount
             char *keyword = strtok(NULL, " \t");
             if (keyword == NULL) {
@@ -298,12 +344,21 @@ int worker(int w_id) {
             }
             PostingList *keywordPostingList = getPostingList(trie, keyword);
             if (keywordPostingList == NULL) {
-                fprintf(logfp, "%s:%s:%s:\n", getCurrentTime(), cmds[1] + 1, keyword);
-                sprintf(msgbuf, "0");
-                if (write(fd1, msgbuf, BUFSIZ) < 0) {
+                fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
+                if (asprintf(&writebuf, "0") < 0) {
+                    perror("asprintf");
+                    return EC_MEM;
+                }
+                msgsize = strlen(writebuf) + 1;
+                if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
                 }
+                if (write(fd1, writebuf, msgsize) < 0) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+                free(writebuf);
                 continue;
             }
             PostingListNode *current = keywordPostingList->first;
@@ -317,22 +372,39 @@ int worker(int w_id) {
                 }
                 current = current->next;
             }
-            fprintf(logfp, "%s:%s:%s:\"%s\"\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[min_id]);
-            sprintf(msgbuf, "%d %s", min_tf, docnames[min_id]);
-            if (write(fd1, msgbuf, BUFSIZ) < 0) {
+            fprintf(logfp, "%s : %s : %s : \"%s\" (%d) \n", getCurrentTime(), cmds[1] + 1, keyword, docnames[min_id], min_tf);
+            if (asprintf(&writebuf, "%d %s", min_tf, docnames[min_id]) < 0) {
+                perror("asprintf");
+                return EC_MEM;
+            }
+            msgsize = strlen(writebuf) + 1;
+            if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
+            if (write(fd1, writebuf, msgsize) < 0) {
+                perror("Error writing to pipe");
+                return EC_PIPE;
+            }
+            free(writebuf);
         } else if (!strcmp(command, cmds[3])) {       // wc
-            sprintf(msgbuf, "%d %d %d", total_chars, total_words, total_lines);
-            if (write(fd1, msgbuf, BUFSIZ) < 0) {
+            if (asprintf(&writebuf, "%d %d %d", total_chars, total_words, total_lines) < 0) {
+                perror("asprintf");
+                return EC_MEM;
+            }
+            msgsize = strlen(writebuf) + 1;
+            if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
-            fprintf(logfp, "%s:%s:%d:%d:%d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
+            if (write(fd1, writebuf, msgsize) < 0) {
+                perror("Error writing to pipe");
+                return EC_PIPE;
+            }
+            free(writebuf);
+            fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
         } else if (!strcmp(command, cmds[5])) {       // exit
-            sprintf(msgbuf, "%d", strings_found_len);
-            if (write(fd1, msgbuf, BUFSIZ) < 0) {
+            if (write(fd1, &strings_found_len, sizeof(int)) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
@@ -342,15 +414,22 @@ int worker(int w_id) {
             break;
         }
         buffer = bufferptr;
+        readbuf = readbufptr;
     }
     if (exit_code == EC_UNKNOWN) {
-        fprintf(stderr, "Something unexpected occured. Worker%d with pid %d will now terminate.\n", w_id, pid);
+        fprintf(stderr, "Illegal command '%s' arrived to Worker%d with pid %d. The worker will now terminate.\n", command, w_id, pid);
     }
 
     if (bufferptr != NULL) {
         free(bufferptr);
     }
-    free(strings_found);
+    if (readbuf != NULL) {
+        free(readbuf);
+    }
+//    if (writebuf != NULL) {
+//        free(writebuf);
+//    }
+    deleteStringList(&strings_found);
     if (fclose(logfp) < 0) {
         perror("fclose");
     }

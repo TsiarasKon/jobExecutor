@@ -129,24 +129,20 @@ int main(int argc, char *argv[]) {
                 return EC_PIPE;
             }
         }
-        pfd1s[w_id].fd = open(fifo1_name, O_RDONLY | O_NONBLOCK);
-        if (pfd1s[w_id].fd < 0) {
-            perror("Error opening pipe");
-            return EC_PIPE;
-        }
         pids[w_id] = fork();
         if (pids[w_id] < 0) {
             perror("fork");
             return EC_FORK;
         } else if (pids[w_id] == 0) {
             printf("Created Worker%d with pid %d\n", w_id, getpid());
-            if (close(pfd1s[w_id].fd) < 0) {
-                perror("Worker failed to close pipe after forking");
-                return EC_PIPE;
-            }
             free(buffer);
             free(docfile);
             return worker(w_id);
+        }
+        pfd1s[w_id].fd = open(fifo1_name, O_RDONLY);
+        if (pfd1s[w_id].fd < 0) {
+            perror("Error opening pipe");
+            return EC_PIPE;
         }
     }
 
@@ -191,17 +187,18 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char pipebuffer[BUFSIZ];
+    char pathbuf[PATH_MAX + 1];
     for(int w_id = 0; w_id < w; w_id++) {
         for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {
-            strcpy(pipebuffer, dirnames[curr_dir]);
-            if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
+            memset(pathbuf, 0, PATH_MAX + 1);
+            strcpy(pathbuf, dirnames[curr_dir]);
+            if (write(fd0s[w_id], pathbuf, PATH_MAX + 1) == -1) {
                 perror("Error writing to pipe");
                 return EC_PIPE;
             }
         }
-        strcpy(pipebuffer, "$");
-        if (write(fd0s[w_id], pipebuffer, BUFSIZ) == -1) {
+        strcpy(pathbuf, "$");
+        if (write(fd0s[w_id], pathbuf, PATH_MAX + 1) == -1) {
             perror("Error writing to pipe");
             return EC_PIPE;
         }
@@ -213,13 +210,20 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, cleanup);
     signal(SIGQUIT, cleanup);
 
-    char *command, msgbuf[BUFSIZ + 1];
+    char *command, *writebuf = NULL, *readbuf = NULL, *readbufptr;
+    size_t msgsize;
     while (1) {             // main program loop
         printf("\n");
         // Until "/exit" is given, read current line and attempt to execute it as a command
         printf("Type a command:\n");
         getline(&buffer, &bufsize, stdin);
-        strcpy(msgbuf, buffer);
+        msgsize = strlen(buffer) + 1;
+        writebuf = realloc(writebuf, msgsize);
+        if (writebuf == NULL) {
+            perror("realloc");
+            return EC_MEM;
+        }
+        strcpy(writebuf, buffer);
         bufferptr = buffer;
         strtok(buffer, "\n");     // remove trailing newline character
         command = strtok(buffer, " \t");
@@ -246,9 +250,9 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "Invalid use of '/search': Type '/help' to see the correct syntax.\n");
                 continue;
             }
-            sprintf(msgbuf, "/search");
+            sprintf(writebuf, "/search");
             while (keyword != NULL) {
-                sprintf(msgbuf, "%s %s", msgbuf, prev_keyword2);
+                sprintf(writebuf, "%s %s", writebuf, prev_keyword2);
                 prev_keyword2 = prev_keyword1;
                 prev_keyword1 = keyword;
                 keyword = strtok(NULL, " \t");
@@ -270,7 +274,11 @@ int main(int argc, char *argv[]) {
             }
             // Search query is valid so we pass it to the workers:
             for (int w_id = 0; w_id < w; w_id++) {
-                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                if (write(fd0s[w_id], &msgsize, sizeof(size_t)) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+                if (write(fd0s[w_id], writebuf, msgsize) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
                 }
@@ -299,15 +307,24 @@ int main(int argc, char *argv[]) {
                 }
                 while (completed[w_id] == 0 && w_id < w) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
-                        if (*msgbuf == '$') {
+                        readbuf = realloc(readbuf, msgsize);
+                        if (readbuf == NULL) {
+                            perror("realloc");
+                            return EC_MEM;
+                        }
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        if (*readbuf == '$') {
                             completed[w_id] = 1;
                             w_responded++;
                         } else {
-                            appendStringListNode(worker_results[w_id], msgbuf);
+                            appendStringListNode(worker_results[w_id], readbuf);
                         }
                     }
                     w_id++;
@@ -316,14 +333,25 @@ int main(int argc, char *argv[]) {
             errno = 0;
             if (timeout) {
                 for (w_id = 0; w_id < w; w_id++) {
-                    kill(pids[w_id], SIGUSR1);      // signal workers to stop executing the search query
                     if (!completed[w_id]) {
+                        kill(pids[w_id], SIGUSR1);      // signal workers to stop executing the search query
                         printf("Worker%d failed to respond on time.\n", w_id);
                     }
                 }
             }
             // Print results of workers who completed before timeout:
             printf("Printing search results from %d out of %d Workers:\n", w_responded, w);
+            int results = 0;
+            for (w_id = 0; w_id < w; w_id++) {
+                if (worker_results[w_id]->first != NULL) {
+                    results = 1;
+                    break;
+                }
+            }
+            if (!results) {
+                printf("The given word(s) could not be found in any of the docs.\n");
+                continue;
+            }
             for (w_id = 0; w_id < w; w_id++) {
                 if (completed[w_id]) {
                     StringListNode *current = worker_results[w_id]->first;
@@ -342,11 +370,11 @@ int main(int argc, char *argv[]) {
                 }
                 while (completed[w_id] == 0 && w_id < w) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                        if (read(pfd1s[w_id].fd, readbuf, 1) < 0) {     ///
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
-                        if (*msgbuf == '$') {
+                        if (*readbuf == '$') {
                             completed[w_id] = 1;
                         }
                     }
@@ -360,7 +388,11 @@ int main(int argc, char *argv[]) {
                 continue;
             }
             for (int w_id = 0; w_id < w; w_id++) {
-                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                if (write(fd0s[w_id], &msgsize, sizeof(size_t)) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+                if (write(fd0s[w_id], writebuf, msgsize) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
                 }
@@ -379,13 +411,23 @@ int main(int argc, char *argv[]) {
                 }
                 while (completed[w_id] == 0 && w_id < w) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
+                        readbuf = realloc(readbuf, msgsize);
+                        if (readbuf == NULL) {
+                            perror("realloc");
+                            return EC_MEM;
+                        }
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        readbufptr = readbuf;
                         completed[w_id] = 1;
-                        buffer = strtok(msgbuf, " ");
-                        worker_tf = atoi(buffer);
+                        readbuf = strtok(readbuf, " ");
+                        worker_tf = atoi(readbuf);
                         if (worker_tf == 0 || worker_tf < curr_max_tf) {
                             continue;
                         }
@@ -400,6 +442,7 @@ int main(int argc, char *argv[]) {
                         // Else the current worker has the new max:
                         curr_max_tf = worker_tf;
                         strcpy(curr_max_docname, worker_docname);
+                        readbuf = readbufptr;
                     }
                     w_id++;
                 }
@@ -416,7 +459,11 @@ int main(int argc, char *argv[]) {
                 continue;
             }
             for (int w_id = 0; w_id < w; w_id++) {
-                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                if (write(fd0s[w_id], &msgsize, sizeof(size_t)) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+                if (write(fd0s[w_id], writebuf, msgsize) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
                 }
@@ -435,13 +482,23 @@ int main(int argc, char *argv[]) {
                 }
                 while (completed[w_id] == 0 && w_id < w) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
+                        readbuf = realloc(readbuf, msgsize);
+                        if (readbuf == NULL) {
+                            perror("realloc");
+                            return EC_MEM;
+                        }
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        readbufptr = readbuf;
                         completed[w_id] = 1;
-                        buffer = strtok(msgbuf, " ");
-                        worker_tf = atoi(buffer);
+                        readbuf = strtok(readbuf, " ");
+                        worker_tf = atoi(readbuf);
                         if (worker_tf == 0 || (worker_tf > curr_min_tf && curr_min_tf != -1)) {
                             continue;
                         }
@@ -456,6 +513,7 @@ int main(int argc, char *argv[]) {
                         // Else the current worker has the new min:
                         curr_min_tf = worker_tf;
                         strcpy(curr_min_docname, worker_docname);
+                        readbuf = readbufptr;
                     }
                     w_id++;
                 }
@@ -467,7 +525,11 @@ int main(int argc, char *argv[]) {
             }
         } else if (!strcmp(command, cmds[3])) {       // wc
             for (int w_id = 0; w_id < w; w_id++) {
-                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                if (write(fd0s[w_id], &msgsize, sizeof(size_t)) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+                if (write(fd0s[w_id], writebuf, msgsize) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
                 }
@@ -485,14 +547,25 @@ int main(int argc, char *argv[]) {
                 }
                 while (completed[w_id] == 0 && w_id < w) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
+                        readbuf = realloc(readbuf, msgsize);
+                        if (readbuf == NULL) {
+                            perror("realloc");
+                            return EC_MEM;
+                        }
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        readbufptr = readbuf;
                         completed[w_id] = 1;
-                        total_chars += atoi(strtok(msgbuf, " "));
+                        total_chars += atoi(strtok(readbuf, " "));
                         total_words += atoi(strtok(NULL, " "));
                         total_lines += atoi(strtok(NULL, " "));
+                        readbuf = readbufptr;
                     }
                     w_id++;
                 }
@@ -512,10 +585,14 @@ int main(int argc, char *argv[]) {
             printf(" '/exit' to terminate this program.\n");
             printf(" '/exit -l' to terminate this program and also delete all log files.\n");
         } else if (!strcmp(command, cmds[5])) {       // exit
-            signal(SIGCHLD, NULL);      // don't want to invoke signal handler at this point
+            signal(SIGCHLD, NULL);      // don't want to invoke SIGCHLD handler at this point
             command = strtok(NULL, " \t");
             for (int w_id = 0; w_id < w; w_id++) {
-                if (write(fd0s[w_id], msgbuf, BUFSIZ) == -1) {
+                if (write(fd0s[w_id], &msgsize, sizeof(size_t)) == -1) {
+                    perror("Error writing to pipe");
+                    return EC_PIPE;
+                }
+                if (write(fd0s[w_id], writebuf, msgsize) == -1) {
                     perror("Error writing to pipe");
                     return EC_PIPE;
                 }
@@ -525,6 +602,7 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
+            int strings_found;
             while ((w_id = getNextIncomplete(completed)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0) {
                     perror("poll");
@@ -532,12 +610,12 @@ int main(int argc, char *argv[]) {
                 }
                 while (completed[w_id] == 0 && w_id < w) {
                     if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, msgbuf, BUFSIZ) < 0) {
+                        if (read(pfd1s[w_id].fd, &strings_found, sizeof(int)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
                         completed[w_id] = 1;
-                        printf("Worker%d found %d search strings.\n", w_id, atoi(msgbuf));
+                        printf("Worker%d found %d search strings.\n", w_id, strings_found);
                     }
                     w_id++;
                 }
@@ -606,6 +684,12 @@ int main(int argc, char *argv[]) {
     if (bufferptr != NULL) {
         free(bufferptr);
     }
+    if (writebuf != NULL) {
+        free(writebuf);
+    }
+    if (readbuf != NULL) {
+        free(readbuf);
+    }
     for (int i = 0; i < dirs_num; i++) {
         free(dirnames[i]);
     }
@@ -644,9 +728,14 @@ int getNextIncomplete(const int completed[]) {
 }
 
 void child_handler(int signum) {   // Used when a worker is terminated to recreate it
-    int status;
-    pid_t terminated_worker_pid = wait(&status);
-    printf("Worker with pid %d killed with status %d.\n", terminated_worker_pid, status);
+    pid_t terminated_worker_pid = wait(NULL);
+    char pathbuffer[PATH_MAX + 1];
+//    strcpy(pathbuffer, "Worker with pid ");
+//    write(STDOUT_FILENO, pathbuffer, strlen(pathbuffer) + 1);
+//    strcpy(pathbuffer, );
+//    write(STDOUT_FILENO, &terminated_worker_pid, sizeof(terminated_worker_pid));
+//    strcpy(pathbuffer, " was killed.\n");
+    write(STDOUT_FILENO, pathbuffer, strlen(pathbuffer) + 1);
     if (terminated_worker_pid != 0) {
         int w_id = 0;
         for (w_id = 0; w_id < w; w_id++) {      // find terminated worker's w_id
@@ -662,20 +751,18 @@ void child_handler(int signum) {   // Used when a worker is terminated to recrea
             printf("Created new Worker%d with pid %d\n", w_id, getpid());
             exit(worker(w_id));
         }
-        char pipebuffer[BUFSIZ];
         signal(SIGCONT, nothing_handler);
         alarm(1);       // just in case worker sends the signal before jobExecutor calls pause()
         pause();        // wait for new worker to open its pipe before writing to it
-        timeout = 0;    // reset timeout which was unintentionally changed by timeout_handler()
         for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {     // send its directories
-            strcpy(pipebuffer, dirnamesptr[curr_dir]);
-            if (write(fd0sptr[w_id], pipebuffer, BUFSIZ) == -1) {
+            strcpy(pathbuffer, dirnamesptr[curr_dir]);
+            if (write(fd0sptr[w_id], pathbuffer, PATH_MAX + 1) == -1) {
                 perror("Error writing to pipe");
                 exit(EC_PIPE);
             }
         }
-        strcpy(pipebuffer, "$");
-        if (write(fd0sptr[w_id], pipebuffer, BUFSIZ) == -1) {
+        strcpy(pathbuffer, "$");
+        if (write(fd0sptr[w_id], pathbuffer, PATH_MAX + 1) == -1) {
             perror("Error writing to pipe");
             exit(EC_PIPE);
         }
