@@ -3,11 +3,12 @@
 #include <sys/time.h>
 #include "util.h"
 
-const char *cmds[6] = {
+const char *cmds[7] = {
         "/search",
         "/maxcount",
         "/mincount",
         "/wc",
+        "/pids",
         "/help",
         "/exit"
 };

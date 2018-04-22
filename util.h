@@ -13,7 +13,7 @@ enum ErrorCodes {
     EC_UNKNOWN   // An unexpected error
 };
 
-const char *cmds[6];
+const char *cmds[7];
 
 int getArrayMax(const int arr[], int dim);
 char* getCurrentTime(void);

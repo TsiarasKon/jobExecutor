@@ -418,7 +418,7 @@ int worker(int w_id) {
             }
             free(writebuf);
             fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
-        } else if (!strcmp(command, cmds[5])) {       // exit
+        } else if (!strcmp(command, cmds[6])) {       // exit
             if (write(fd1, &strings_found_len, sizeof(int)) < 0) {
                 perror("Error writing to pipe");
                 return EC_PIPE;

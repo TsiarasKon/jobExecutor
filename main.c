@@ -630,6 +630,11 @@ int main(int argc, char *argv[]) {
             printf("Total words: %d\n", total_words);
             printf("Total lines: %d\n", total_lines);
         } else if (!strcmp(command, cmds[4])) {
+            printf("jobExecutor: %d\n", getpid());
+            for (int w_id = 0; w_id < w; w_id++) {
+                printf("Worker%d: %d\n", w_id, pids[w_id]);
+            }
+        } else if (!strcmp(command, cmds[5])) {
             printf("Available commands (use without quotes):\n");
             printf(" '/search word1 word2 ... -d deadline' for a list of the files that include the given words, along with the lines where they appear.\n");
             printf("    Results will be printed within the seconds given as an integer (deadline).\n");
@@ -637,10 +642,11 @@ int main(int argc, char *argv[]) {
             printf(" '/maxcount word' for the file where the given word appears the most.\n");
             printf(" '/mincount word' for the file where the given word appears the least (but at least once).\n");
             printf(" '/wc' for the number of characters (bytes), words and lines of every file.\n");
+            printf(" '/pids' for a list containing jobExecutor's and all its workers' process ids.\n");
             printf(" '/help' for the list you're seeing right now.\n");
             printf(" '/exit' to terminate this program.\n");
             printf(" '/exit -l' to terminate this program and also delete all log files.\n");
-        } else if (!strcmp(command, cmds[5])) {       // exit
+        } else if (!strcmp(command, cmds[6])) {       // exit
             signal(SIGCHLD, NULL);      // don't want to invoke SIGCHLD handler at this point
             command = strtok(NULL, " \t");
             for (int w_id = 0; w_id < w; w_id++) {
