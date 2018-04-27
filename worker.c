@@ -188,22 +188,24 @@ int worker(int w_id) {
     char *command, *readbufptr, *readbuf = NULL, *writebuf = NULL;
     size_t msgsize;
     while (!workerKilled) {
-        if (read(fd0, &msgsize, sizeof(size_t)) < 0) {      // read size of command
-            if (errno == EINTR) {
-                break;
+        if (read(fd0, &msgsize, sizeof(size_t)) < sizeof(size_t)) {      // read size of command
+            if (errno != EINTR) {
+                perror("Error reading from pipe");
+                exit_code = EC_PIPE;
             }
-            perror("Error reading from pipe");
-            return EC_PIPE;
+            break;
         }
         readbuf = realloc(readbuf, msgsize);
         if (readbuf == NULL) {
             perror("realloc");
-            return EC_MEM;
+            exit_code = EC_MEM;
+            break;
         }
         readbufptr = readbuf;
-        if (read(fd0, readbuf, msgsize) < 0) {      // should only be one line
+        if (read(fd0, readbuf, msgsize) < msgsize) {      // should only be one line
             perror("Error reading from pipe");
-            return EC_PIPE;
+            exit_code = EC_PIPE;
+            break;
         }
         strtok(readbuf, "\n");     // remove trailing newline character
         command = strtok(readbuf, " \t");
@@ -216,10 +218,12 @@ int worker(int w_id) {
             }
             StringList *terms = createStringList();
             if (terms == NULL) {
-                return EC_MEM;
+                exit_code = EC_MEM;
+                break;
             }
             if (appendStringListNode(terms, keyword) != EC_OK) {
-                return EC_MEM;
+                exit_code = EC_MEM;
+                break;
             }
             keyword = strtok(NULL, " \t");
             while (keyword != NULL) {
@@ -249,7 +253,7 @@ int worker(int w_id) {
                     fprintf(logfp, " : \"%s\"", docnames[currPLNode->id]);
                     IntListNode *currLine = currPLNode->lines->first;
                     while (currLine != NULL && worker_timeout == 0) {
-                        //sleep(1);    /// For debug puposes - testing timeout
+                        if (w_id == 0) sleep(2);    /// For debug puposes - testing timeout
                         if (doclines_returned[currPLNode->id] == NULL) {
                             doclines_returned[currPLNode->id] = createPostingListNode(currPLNode->id, currLine->line);
                         } else if (existsInIntList(doclines_returned[currPLNode->id]->lines, currLine->line)) {
@@ -288,16 +292,19 @@ int worker(int w_id) {
             deleteStringList(&terms);
             if (asprintf(&writebuf, "$") < 0) {
                 perror("asprintf");
-                return EC_MEM;
+                exit_code = EC_MEM;
+                break;
             }
             msgsize = strlen(writebuf) + 1;
             if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                 perror("Error writing to pipe");
-                return EC_PIPE;
+                exit_code = EC_PIPE;
+                break;
             }
             if (write(fd1, writebuf, msgsize) < 0) {
                 perror("Error writing to pipe");
-                return EC_PIPE;
+                exit_code = EC_PIPE;
+                break;
             }
             free(writebuf);
         } else if (!strcmp(command, cmds[1])) {       // maxcount
@@ -311,16 +318,19 @@ int worker(int w_id) {
                 fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
                 if (asprintf(&writebuf, "0") < 0) {
                     perror("asprintf");
-                    return EC_MEM;
+                    exit_code = EC_MEM;
+                    break;
                 }
                 msgsize = strlen(writebuf) + 1;
                 if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                     perror("Error writing to pipe");
-                    return EC_PIPE;
+                    exit_code = EC_PIPE;
+                    break;
                 }
                 if (write(fd1, writebuf, msgsize) < 0) {
                     perror("Error writing to pipe");
-                    return EC_PIPE;
+                    exit_code = EC_PIPE;
+                    break;
                 }
                 free(writebuf);
                 continue;
@@ -339,16 +349,19 @@ int worker(int w_id) {
             fprintf(logfp, "%s : %s : %s : \"%s\" (%d)\n", getCurrentTime(), cmds[1] + 1, keyword, docnames[max_id], max_tf);
             if (asprintf(&writebuf, "%d %s", max_tf, docnames[max_id]) < 0) {
                 perror("asprintf");
-                return EC_MEM;
+                exit_code = EC_MEM;
+                break;
             }
             msgsize = strlen(writebuf) + 1;
             if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                 perror("Error writing to pipe");
-                return EC_PIPE;
+                exit_code = EC_PIPE;
+                break;
             }
             if (write(fd1, writebuf, msgsize) < 0) {
                 perror("Error writing to pipe");
-                return EC_PIPE;
+                exit_code = EC_PIPE;
+                break;
             }
             free(writebuf);
         } else if (!strcmp(command, cmds[2])) {       // mincount
@@ -362,16 +375,19 @@ int worker(int w_id) {
                 fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[1] + 1, keyword);
                 if (asprintf(&writebuf, "0") < 0) {
                     perror("asprintf");
-                    return EC_MEM;
+                    exit_code = EC_MEM;
+                    break;
                 }
                 msgsize = strlen(writebuf) + 1;
                 if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                     perror("Error writing to pipe");
-                    return EC_PIPE;
+                    exit_code = EC_PIPE;
+                    break;
                 }
                 if (write(fd1, writebuf, msgsize) < 0) {
                     perror("Error writing to pipe");
-                    return EC_PIPE;
+                    exit_code = EC_PIPE;
+                    break;
                 }
                 free(writebuf);
                 continue;
@@ -390,38 +406,45 @@ int worker(int w_id) {
             fprintf(logfp, "%s : %s : %s : \"%s\" (%d) \n", getCurrentTime(), cmds[1] + 1, keyword, docnames[min_id], min_tf);
             if (asprintf(&writebuf, "%d %s", min_tf, docnames[min_id]) < 0) {
                 perror("asprintf");
-                return EC_MEM;
+                exit_code = EC_MEM;
+                break;
             }
             msgsize = strlen(writebuf) + 1;
             if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                 perror("Error writing to pipe");
-                return EC_PIPE;
+                exit_code = EC_PIPE;
+                break;
             }
             if (write(fd1, writebuf, msgsize) < 0) {
                 perror("Error writing to pipe");
-                return EC_PIPE;
+                exit_code = EC_PIPE;
+                break;
             }
             free(writebuf);
         } else if (!strcmp(command, cmds[3])) {       // wc
             if (asprintf(&writebuf, "%d %d %d", total_chars, total_words, total_lines) < 0) {
                 perror("asprintf");
-                return EC_MEM;
+                exit_code = EC_MEM;
+                break;
             }
             msgsize = strlen(writebuf) + 1;
             if (write(fd1, &msgsize, sizeof(size_t)) < 0) {
                 perror("Error writing to pipe");
-                return EC_PIPE;
+                exit_code = EC_PIPE;
+                break;
             }
             if (write(fd1, writebuf, msgsize) < 0) {
                 perror("Error writing to pipe");
-                return EC_PIPE;
+                exit_code = EC_PIPE;
+                break;
             }
             free(writebuf);
             fprintf(logfp, "%s : %s : %d : %d : %d\n", getCurrentTime(), cmds[3] + 1, total_chars, total_words, total_lines);
         } else if (!strcmp(command, cmds[6])) {       // exit
             if (write(fd1, &strings_found_len, sizeof(int)) < 0) {
                 perror("Error writing to pipe");
-                return EC_PIPE;
+                exit_code = EC_PIPE;
+                break;
             }
             break;
         } else {        // shouldn't ever get here

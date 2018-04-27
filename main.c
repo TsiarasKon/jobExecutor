@@ -307,11 +307,14 @@ int main(int argc, char *argv[]) {
                 continue;
             }
             sprintf(writebuf, "/search");
+            char *tempbuf;
             while (keyword != NULL) {
-                sprintf(writebuf, "%s %s", writebuf, prev_keyword2);
+                asprintf(&tempbuf, "%s %s", writebuf, prev_keyword2);
+                strcpy(writebuf, tempbuf);
                 prev_keyword2 = prev_keyword1;
                 prev_keyword1 = keyword;
                 keyword = strtok(NULL, " \t");
+                free(tempbuf);
             }
             if ((strcmp(prev_keyword2, "-d")) != 0) {
                 fprintf(stderr, "Invalid use of '/search': No deadline specified.\n");
@@ -361,9 +364,9 @@ int main(int argc, char *argv[]) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (w_id < w && completed[w_id] == 0) {
-                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
+                while (w_id < w) {
+                    if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -372,7 +375,7 @@ int main(int argc, char *argv[]) {
                             perror("realloc");
                             return EC_MEM;
                         }
-                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -383,7 +386,7 @@ int main(int argc, char *argv[]) {
                             appendStringListNode(worker_results[w_id], readbuf);
                         }
                     }
-                    w_id++;
+                    ++w_id;
                 }
             }
             errno = 0;
@@ -396,16 +399,19 @@ int main(int argc, char *argv[]) {
                 }
             }
             // Print results of workers who completed before timeout:
-            printf("Printing search results from %d out of %d Workers:\n", w_responded, w);
+            printf("Results from %d out of %d Workers:\n", w_responded, w);
             int results = 0;
             for (w_id = 0; w_id < w; w_id++) {
-                if (worker_results[w_id]->first != NULL) {
+                if (completed[w_id] && worker_results[w_id]->first != NULL) {
                     results = 1;
                     break;
                 }
             }
             if (!results) {
-                printf("The given word(s) could not be found in any of the docs.\n");
+                printf("The given word(s) could not be found in any of the searched docs.\n");
+                for (w_id = 0; w_id < w; w_id++) {
+                    deleteStringList(&worker_results[w_id]);
+                }
                 continue;
             }
             for (w_id = 0; w_id < w; w_id++) {
@@ -424,9 +430,18 @@ int main(int argc, char *argv[]) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (w_id < w && completed[w_id] == 0) {
-                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, readbuf, 1) < 0) {     ///
+                while (w_id < w) {
+                    if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
+                            perror("Error reading from pipe");
+                            return EC_PIPE;
+                        }
+                        readbuf = realloc(readbuf, msgsize);
+                        if (readbuf == NULL) {
+                            perror("realloc");
+                            return EC_MEM;
+                        }
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -465,9 +480,9 @@ int main(int argc, char *argv[]) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (w_id < w && completed[w_id] == 0) {
-                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
+                while (w_id < w) {
+                    if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -476,7 +491,7 @@ int main(int argc, char *argv[]) {
                             perror("realloc");
                             return EC_MEM;
                         }
-                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -536,9 +551,9 @@ int main(int argc, char *argv[]) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (w_id < w && completed[w_id] == 0) {
-                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
+                while (w_id < w) {
+                    if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -547,7 +562,7 @@ int main(int argc, char *argv[]) {
                             perror("realloc");
                             return EC_MEM;
                         }
-                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -601,9 +616,9 @@ int main(int argc, char *argv[]) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (w_id < w && completed[w_id] == 0) {
-                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
+                while (w_id < w) {
+                    if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -612,7 +627,7 @@ int main(int argc, char *argv[]) {
                             perror("realloc");
                             return EC_MEM;
                         }
-                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -670,9 +685,9 @@ int main(int argc, char *argv[]) {
                     perror("poll");
                     return EC_PIPE;
                 }
-                while (w_id < w && completed[w_id] == 0) {
-                    if (pfd1s[w_id].revents & POLLIN) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &strings_found, sizeof(int)) < 0) {
+                while (w_id < w) {
+                    if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
+                        if (read(pfd1s[w_id].fd, &strings_found, sizeof(int)) < sizeof(int)) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
