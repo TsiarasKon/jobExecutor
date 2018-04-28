@@ -12,9 +12,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5307b7c2-1bf6-403e-b438-79efefaada27" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/awk_test" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/kw_most_found.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/cmake-build-debug/total_kw_searched.sh" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/input_files/small_from_ex1/smallDataset.txt" afterPath="$PROJECT_DIR$/input_files/small_from_ex1/smallDataset.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.c" afterPath="$PROJECT_DIR$/main.c" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/worker.c" afterPath="$PROJECT_DIR$/worker.c" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -26,14 +27,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.55776674">
+    <splitter split-orientation="horizontal" split-proportion="0.4013267">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.c">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="609">
-                  <caret line="449" column="25" lean-forward="false" selection-start-line="449" selection-start-column="25" selection-end-line="449" selection-end-column="25" />
+                <state relative-caret-position="303">
+                  <caret line="432" column="34" lean-forward="true" selection-start-line="432" selection-start-column="34" selection-end-line="432" selection-end-column="34" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -69,7 +70,7 @@
             <entry file="file://$PROJECT_DIR$/worker.c">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="406">
-                  <caret line="296" column="13" lean-forward="true" selection-start-line="296" selection-start-column="13" selection-end-line="296" selection-end-column="13" />
+                  <caret line="245" column="17" lean-forward="true" selection-start-line="245" selection-start-column="17" selection-end-line="245" selection-end-column="17" />
                   <folding>
                     <element signature="e#45#63#0" expanded="true" />
                   </folding>
@@ -186,8 +187,8 @@
         <option value="$PROJECT_DIR$/lists.c" />
         <option value="$PROJECT_DIR$/util.h" />
         <option value="$PROJECT_DIR$/util.c" />
-        <option value="$PROJECT_DIR$/worker.c" />
         <option value="$PROJECT_DIR$/main.c" />
+        <option value="$PROJECT_DIR$/worker.c" />
       </list>
     </option>
   </component>
@@ -301,15 +302,17 @@
       <workItem from="1524385396046" duration="15952000" />
       <workItem from="1524412915124" duration="11188000" />
       <workItem from="1524851573551" duration="828000" />
-      <workItem from="1524856423138" duration="5265000" />
+      <workItem from="1524856423138" duration="5324000" />
+      <workItem from="1524861913281" duration="5000" />
+      <workItem from="1524948279933" duration="1133000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="198708000" />
+    <option name="totallyTimeSpent" value="199905000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1857" height="1092" extended-state="6" />
+    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.13598673" sideWeight="0.42888403" order="1" side_tool="false" content_ui="combo" />
@@ -749,8 +752,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="609">
-          <caret line="449" column="25" lean-forward="false" selection-start-line="449" selection-start-column="25" selection-end-line="449" selection-end-column="25" />
+        <state relative-caret-position="303">
+          <caret line="432" column="34" lean-forward="true" selection-start-line="432" selection-start-column="34" selection-end-line="432" selection-end-column="34" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>
@@ -760,7 +763,7 @@
     <entry file="file://$PROJECT_DIR$/worker.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="406">
-          <caret line="296" column="13" lean-forward="true" selection-start-line="296" selection-start-column="13" selection-end-line="296" selection-end-column="13" />
+          <caret line="245" column="17" lean-forward="true" selection-start-line="245" selection-start-column="17" selection-end-line="245" selection-end-column="17" />
           <folding>
             <element signature="e#45#63#0" expanded="true" />
           </folding>

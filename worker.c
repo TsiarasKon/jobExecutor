@@ -239,7 +239,7 @@ int worker(int w_id) {
             }
             while (currTerm != NULL && worker_timeout == 0) {
                 PostingList *keywordPostingList = getPostingList(trie, currTerm->string);
-                if (keywordPostingList == NULL) {     // current term doesn't exist in trie
+                if (keywordPostingList == NULL || keywordPostingList->first == NULL) {     // current term doesn't exist in trie
                     fprintf(logfp, "%s : %s : %s :\n", getCurrentTime(), cmds[0] + 1, currTerm->string);
                     currTerm = currTerm->next;
                     continue;
