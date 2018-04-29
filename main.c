@@ -61,6 +61,9 @@ int main(int argc, char *argv[]) {
     }
     if (w == 0 || docfile == NULL) {
         fprintf(stderr, "Invalid arguments. Please run \"$ ./jobExecutor -d docfile -w numWorkers\"\n");
+		if (docfile != NULL) {
+			free(docfile);
+		}
         return EC_ARG;
     }
 
@@ -68,20 +71,37 @@ int main(int argc, char *argv[]) {
     FILE *fp;
     if ((fp = fopen(docfile, "r")) == NULL) {
         perror("fopen");
+		free(docfile);
         return EC_FILE;
     }
     size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
     char *buffer = NULL, *bufferptr = NULL;
     int dirs_num = 0;
+    DIR *testdir;
     while (getline(&buffer, &bufsize, fp) != -1) {
         if (buffer[0] == '\n')  {     // ignore empty lines
             continue;
         }
+        bufferptr = buffer;
+        strtok(buffer, "\n");
+        buffer = strtok(buffer, " \t");
+        if (!(testdir = opendir(buffer))) {     // couldn't open dir
+            fprintf(stderr, "Failed to open directory \"%s\"", buffer);
+			perror(" ");
+			buffer = bufferptr;
+			continue;
+        }
+        closedir(testdir);
         dirs_num++;
+		buffer = bufferptr;
     }
     fclose(fp);
     if (dirs_num == 0) {
         printf("No directories given - Nothing to do here!\n");
+		free(docfile);
+		if (bufferptr != NULL) {
+			free(bufferptr);
+		}
         return EC_OK;
     }
     if (dirs_num < w) {     // No reason to create more workers than the number of directories
@@ -91,6 +111,7 @@ int main(int argc, char *argv[]) {
     int exit_code;
     if ((exit_code = makeProgramDirs()) != EC_OK) {
         fprintf(stderr, "Unable to create folders.\n");
+		free(docfile);
         return exit_code;
     }
 
@@ -110,10 +131,12 @@ int main(int argc, char *argv[]) {
                 unlink(fifo0_name);
                 if (mkfifo(fifo0_name, 0666) == -1) {
                     perror("Error creating pipe");
+					free(docfile);
                     return EC_PIPE;
                 }
             } else {
                 perror("Error creating pipe");
+				free(docfile);
                 return EC_PIPE;
             }
         }
@@ -123,10 +146,12 @@ int main(int argc, char *argv[]) {
                 unlink(fifo1_name);
                 if (mkfifo(fifo1_name, 0666) == -1) {
                     perror("Error creating pipe");
+					free(docfile);
                     return EC_PIPE;
                 }
             } else {
                 perror("Error creating pipe");
+				free(docfile);
                 return EC_PIPE;
             }
         }
@@ -134,6 +159,7 @@ int main(int argc, char *argv[]) {
         pids[w_id] = fork();
         if (pids[w_id] < 0) {
             perror("fork");
+			free(docfile);
             return EC_FORK;
         } else if (pids[w_id] == 0) {
             printf("Created Worker%d with pid %d\n", w_id, getpid());
@@ -144,6 +170,7 @@ int main(int argc, char *argv[]) {
         pfd1s[w_id].fd = open(fifo1_name, O_RDONLY);
         if (pfd1s[w_id].fd < 0) {
             perror("Error opening pipe");
+			free(docfile);
             return EC_PIPE;
         }
         child_alive[w_id] = 1;
@@ -153,9 +180,9 @@ int main(int argc, char *argv[]) {
     char *dirnames[dirs_num];
     if ((fp = fopen(docfile, "r")) == NULL) {
         perror("fopen");
+		free(docfile);
         return EC_FILE;
     }
-    DIR *testdir;
     for (int curr_line = 0; curr_line < dirs_num; curr_line++) {
         if (getline(&buffer, &bufsize, fp) == -1) {
             perror("Error");
@@ -165,12 +192,13 @@ int main(int argc, char *argv[]) {
             curr_line--;    // empty lines shouldn't count as actual lines
             continue;
         }
-        bufferptr = buffer;
+         bufferptr = buffer;
         strtok(buffer, "\n");
         buffer = strtok(buffer, " \t");
-        if (!(testdir = opendir(buffer))) {     // couldn't open dir
-            perror("Failed to open directory");
-            return EC_DIR;
+        if (!(testdir = opendir(buffer))) {     // invalid directory
+			buffer = bufferptr;
+			curr_line--;
+			continue;
         }
         closedir(testdir);
         dirnames[curr_line] = malloc(strlen(buffer) + 1);
@@ -178,6 +206,7 @@ int main(int argc, char *argv[]) {
         buffer = bufferptr;
     }
     fclose(fp);
+	free(docfile);
 
     int fd0s[w];
     for(int w_id = 0; w_id < w; w_id++) {
@@ -255,7 +284,6 @@ int main(int argc, char *argv[]) {
                     for (int i = 0; i < dirs_num; i++) {
                         free(dirnames[i]);
                     }
-                    free(docfile);
                     return worker(tw_id);
                 }
                 alarm(1);       // just in case worker sends the signal before jobExecutor calls pause()
@@ -785,7 +813,6 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < dirs_num; i++) {
         free(dirnames[i]);
     }
-    free(docfile);
     printf("jobExecutor has exited.\n");
     return exit_code;
 }
