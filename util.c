@@ -13,7 +13,7 @@ const char *cmds[7] = {
         "/exit"
 };
 
-int getArrayMax(const int arr[], int dim) {
+int getArrayMax(const int *arr, int dim) {
     if (dim == 0) {
         return -1;
     }
@@ -25,6 +25,16 @@ int getArrayMax(const int arr[], int dim) {
     }
     return curr_max;
 }
+
+int getNextZero(const int *arr, int dim) {
+    for (int i = 0; i < dim; i++) {
+        if (arr[i] == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 
 char* getCurrentTime(void) {
     time_t rawtime;

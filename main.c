@@ -20,7 +20,6 @@ int w = 0;
 int worker(int w_id);
 
 int makeProgramDirs(void);
-int getNextZero(const int *arr);
 
 static int timeout = 0;
 void timeout_handler(int signum) {
@@ -37,7 +36,7 @@ void executor_cleanup(int signum) {
 }
 
 pid_t *pidsptr;
-int *child_aliveptr;
+int *child_aliveptr;    // global pointer so as to know which worker needs replacing
 void child_handler(int signum);
 
 int main(int argc, char *argv[]) {
@@ -65,6 +64,7 @@ int main(int argc, char *argv[]) {
         return EC_ARG;
     }
 
+    // Count number of directories in docfile:
     FILE *fp;
     if ((fp = fopen(docfile, "r")) == NULL) {
         perror("fopen");
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
     pidsptr = pids;
     int child_alive[w];
     child_aliveptr = child_alive;
-    struct pollfd pfd1s[w];
+    struct pollfd pfd1s[w];     // pollfds are needed for polling from multiple pipes later on
     for (int i = 0; i < w; i++) {
         pfd1s[i].events = POLLIN;
     }
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
     for(int w_id = 0; w_id < w; w_id++) {
         sprintf(fifo0_name, "%s/Worker%d_0", PIPEPATH, w_id);
         if (mkfifo(fifo0_name, 0666) == -1) {
-            if (errno == EEXIST) {      // if fifo already existed we delete it (for good measure) and retry creating it
+            if (errno == EEXIST) {      // if fifo already existed we delete it (for good measure) and recreate it
                 unlink(fifo0_name);
                 if (mkfifo(fifo0_name, 0666) == -1) {
                     perror("Error creating pipe");
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
         }
         sprintf(fifo1_name, "%s/Worker%d_1", PIPEPATH, w_id);
         if (mkfifo(fifo1_name, 0666) == -1) {
-            if (errno == EEXIST) {      // if fifo already existed we delete it (for good measure) and retry creating it
+            if (errno == EEXIST) {      // if fifo already existed we delete it (for good measure) and recreate it
                 unlink(fifo1_name);
                 if (mkfifo(fifo1_name, 0666) == -1) {
                     perror("Error creating pipe");
@@ -130,6 +130,7 @@ int main(int argc, char *argv[]) {
                 return EC_PIPE;
             }
         }
+        // Fork w workers:
         pids[w_id] = fork();
         if (pids[w_id] < 0) {
             perror("fork");
@@ -148,6 +149,7 @@ int main(int argc, char *argv[]) {
         child_alive[w_id] = 1;
     }
 
+    // Read directories from docfile and save them in dirnames[]:
     char *dirnames[dirs_num];
     if ((fp = fopen(docfile, "r")) == NULL) {
         perror("fopen");
@@ -187,6 +189,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Send the directories to worker
     char pathbuf[PATH_MAX + 1];
     for(int w_id = 0; w_id < w; w_id++) {
         for (int curr_dir = w_id; curr_dir < dirs_num; curr_dir += w) {
@@ -205,6 +208,7 @@ int main(int argc, char *argv[]) {
     }
 
     signal(SIGCHLD, child_handler);
+    signal(SIGCONT, nothing_handler);
     signal(SIGALRM, timeout_handler);
     struct sigaction act;
     memset(&act, 0, sizeof(act));
@@ -224,7 +228,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         int tw_id;
-        while ((tw_id = getNextZero(child_alive)) >= 0) {
+        while ((tw_id = getNextZero(child_alive, w)) >= 0) {       // check if any workers have died and replace them here
             pid_t terminated_worker_pid = pids[tw_id];
             if (terminated_worker_pid != 0) {
                 pids[tw_id] = fork();
@@ -254,7 +258,6 @@ int main(int argc, char *argv[]) {
                     free(docfile);
                     return worker(tw_id);
                 }
-                signal(SIGCONT, nothing_handler);
                 alarm(1);       // just in case worker sends the signal before jobExecutor calls pause()
                 pause();        // wait for new worker to open its pipe before writing to it
                 for (int curr_dir = tw_id; curr_dir < dirs_num; curr_dir += w) {     // send its directories
@@ -343,7 +346,7 @@ int main(int argc, char *argv[]) {
                 }
             }
             int completed[w];
-            StringList *worker_results[w];
+            StringList *worker_results[w];      // save each worker's result in a list
             int w_id = 0;
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
@@ -356,7 +359,7 @@ int main(int argc, char *argv[]) {
             if (deadline != 0) {
                 alarm((unsigned int) deadline);   // when the time for search is up jobExecutor will get a SIGALRM
             }
-            while ((w_id = getNextZero(completed)) != -1 && timeout == 0) {
+            while ((w_id = getNextZero(completed, w)) != -1 && timeout == 0) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     if (errno == EINTR) {       // timed out
                         break;
@@ -366,7 +369,7 @@ int main(int argc, char *argv[]) {
                 }
                 while (w_id < w) {
                     if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -375,7 +378,7 @@ int main(int argc, char *argv[]) {
                             perror("realloc");
                             return EC_MEM;
                         }
-                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -398,7 +401,6 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-            // Print results of workers who completed before timeout:
             printf("Results from %d out of %d Workers:\n", w_responded, w);
             int results = 0;
             for (w_id = 0; w_id < w; w_id++) {
@@ -412,27 +414,27 @@ int main(int argc, char *argv[]) {
                 for (w_id = 0; w_id < w; w_id++) {
                     deleteStringList(&worker_results[w_id]);
                 }
-                continue;
-            }
-            for (w_id = 0; w_id < w; w_id++) {
-                if (completed[w_id]) {
-                    StringListNode *current = worker_results[w_id]->first;
-                    while (current != NULL) {
-                        printf("%s\n", current->string);
-                        current = current->next;
+            } else {        // Print results of workers who completed before timeout:
+                for (w_id = 0; w_id < w; w_id++) {
+                    if (completed[w_id]) {
+                        StringListNode *current = worker_results[w_id]->first;
+                        while (current != NULL) {
+                            printf("%s\n", current->string);
+                            current = current->next;
+                        }
                     }
+                    deleteStringList(&worker_results[w_id]);
                 }
-                deleteStringList(&worker_results[w_id]);
             }
             // Read what's left from incomplete workers in order to clear the pipes:
-            while ((w_id = getNextZero(completed)) != -1) {
+            while ((w_id = getNextZero(completed, w)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
                 while (w_id < w) {
                     if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -441,7 +443,7 @@ int main(int argc, char *argv[]) {
                             perror("realloc");
                             return EC_MEM;
                         }
-                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -475,14 +477,14 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextZero(completed)) != -1) {
+            while ((w_id = getNextZero(completed, w)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
                 while (w_id < w) {
                     if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -491,7 +493,7 @@ int main(int argc, char *argv[]) {
                             perror("realloc");
                             return EC_MEM;
                         }
-                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -546,14 +548,14 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextZero(completed)) != -1) {
+            while ((w_id = getNextZero(completed, w)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
                 while (w_id < w) {
                     if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -562,7 +564,7 @@ int main(int argc, char *argv[]) {
                             perror("realloc");
                             return EC_MEM;
                         }
-                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -611,14 +613,14 @@ int main(int argc, char *argv[]) {
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
-            while ((w_id = getNextZero(completed)) != -1) {
+            while ((w_id = getNextZero(completed, w)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
                 while (w_id < w) {
                     if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < sizeof(size_t)) {
+                        if (read(pfd1s[w_id].fd, &msgsize, sizeof(size_t)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -627,7 +629,7 @@ int main(int argc, char *argv[]) {
                             perror("realloc");
                             return EC_MEM;
                         }
-                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < msgsize) {
+                        if (read(pfd1s[w_id].fd, readbuf, msgsize) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -674,20 +676,21 @@ int main(int argc, char *argv[]) {
                     return EC_PIPE;
                 }
             }
+            // Get and print "search string found" from each worker:
             int completed[w];
             int w_id;
             for (w_id = 0; w_id < w; w_id++) {
                 completed[w_id] = 0;
             }
             int strings_found;
-            while ((w_id = getNextZero(completed)) != -1) {
+            while ((w_id = getNextZero(completed, w)) != -1) {
                 if (poll(pfd1s, (nfds_t) w, -1) < 0 && errno != EINTR) {
                     perror("poll");
                     return EC_PIPE;
                 }
                 while (w_id < w) {
                     if ((pfd1s[w_id].revents & POLLIN) && completed[w_id] == 0) {     // we can read from w_id
-                        if (read(pfd1s[w_id].fd, &strings_found, sizeof(int)) < sizeof(int)) {
+                        if (read(pfd1s[w_id].fd, &strings_found, sizeof(int)) < 0) {
                             perror("Error reading from pipe");
                             return EC_PIPE;
                         }
@@ -697,6 +700,7 @@ int main(int argc, char *argv[]) {
                     w_id++;
                 }
             }
+            // We don't want any zombies:
             for (w_id = 0; w_id < w; w_id++) {
                 waitpid(pids[w_id], NULL, 0);
             }
@@ -755,7 +759,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
+    // Free everything:
     for (int w_id = 0; w_id < w; w_id++) {
         if (close(fd0s[w_id]) < 0 || close(pfd1s[w_id].fd) < 0) {
             perror("Error closing pipes");
@@ -804,15 +808,6 @@ int makeProgramDirs(void) {
         }
     }
     return EC_OK;
-}
-
-int getNextZero(const int *arr) {
-    for (int i = 0; i < w; i++) {
-        if (arr[i] == 0) {
-            return i;
-        }
-    }
-    return -1;
 }
 
 void child_handler(int signum) {   // Used when a worker is terminated to recreate it

@@ -29,6 +29,5 @@ PostingList* createPostingList();
 void deletePostingList(PostingList **postingList);
 
 int incrementPostingList(TrieNode *node, int id, int line);
-int getTermFrequency(PostingList *postingList, int id);
 
 #endif

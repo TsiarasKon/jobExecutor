@@ -35,7 +35,7 @@ int worker(int w_id) {
         return EC_PIPE;
     }
 
-    kill(getppid(), SIGCONT);
+    kill(getppid(), SIGCONT);       // signal jobExecutor that it can now write to pipe
     char pathbuffer[PATH_MAX + 1];
     StringList *dirnames = createStringList();
     if (dirnames == NULL) {
@@ -68,9 +68,8 @@ int worker(int w_id) {
         closedir(dirp);
         curr_dirname = curr_dirname->next;
     }
-//    printf("Worker #%d docs: %d\n", w_id, doc_count);
 
-    int total_chars = 0, total_words = 0, total_lines = 0;
+    int total_chars = 0, total_words = 0, total_lines = 0;      // needed for /wc
     char *docnames[doc_count];
     int doclines[doc_count];
     char **docs[doc_count];
@@ -86,6 +85,7 @@ int worker(int w_id) {
     char symb_name[PATH_MAX + 1], full_name[PATH_MAX + 1];
     size_t bufsize = 128;      // sample size - getline will reallocate memory as needed
     char *buffer = NULL, *bufferptr = NULL;
+    // Load files from directories:
     while (curr_dirname != NULL) {
         if ((dirp = opendir(curr_dirname->string)) == NULL) {
             perror("Error opening directory");
@@ -118,7 +118,7 @@ int worker(int w_id) {
                 perror("malloc");
                 return EC_MEM;
             }
-            rewind(fp);     // start again from the beginning of docfile
+            rewind(fp);
             int line_len;
             for (int curr_line = 0; curr_line < lines_num; curr_line++) {
                 if (getline(&buffer, &bufsize, fp) == -1) {
@@ -188,7 +188,7 @@ int worker(int w_id) {
     char *command, *readbufptr, *readbuf = NULL, *writebuf = NULL;
     size_t msgsize;
     while (!workerKilled) {
-        if (read(fd0, &msgsize, sizeof(size_t)) < sizeof(size_t)) {      // read size of command
+        if (read(fd0, &msgsize, sizeof(size_t)) < 0) {      // read size of command
             if (errno != EINTR) {
                 perror("Error reading from pipe");
                 exit_code = EC_PIPE;
@@ -202,7 +202,7 @@ int worker(int w_id) {
             break;
         }
         readbufptr = readbuf;
-        if (read(fd0, readbuf, msgsize) < msgsize) {      // should only be one line
+        if (read(fd0, readbuf, msgsize) < 0) {      // should only be one line
             perror("Error reading from pipe");
             exit_code = EC_PIPE;
             break;
@@ -216,7 +216,7 @@ int worker(int w_id) {
                 exit_code = EC_UNKNOWN;
                 break;
             }
-            StringList *terms = createStringList();
+            StringList *terms = createStringList();     // keep search terms here
             if (terms == NULL) {
                 exit_code = EC_MEM;
                 break;
@@ -233,6 +233,7 @@ int worker(int w_id) {
                 keyword = strtok(NULL, " \t");
             }
             StringListNode *currTerm = terms->first;
+            // Keep the lines returned here so that we avoid sending duplicate lines to jobExecutor:
             PostingListNode **doclines_returned = malloc(doc_count * sizeof(PostingListNode*));
             for (int i = 0; i < doc_count; i++) {
                 doclines_returned[i] = NULL;
@@ -253,7 +254,7 @@ int worker(int w_id) {
                     fprintf(logfp, " : \"%s\"", docnames[currPLNode->id]);
                     IntListNode *currLine = currPLNode->lines->first;
                     while (currLine != NULL && worker_timeout == 0) {
-                        if (w_id == 0) sleep(2);    /// For debug puposes - testing timeout
+                        //if (w_id == 0) sleep(2);    /// For debug puposes - testing timeout
                         if (doclines_returned[currPLNode->id] == NULL) {
                             doclines_returned[currPLNode->id] = createPostingListNode(currPLNode->id, currLine->line);
                         } else if (existsInIntList(doclines_returned[currPLNode->id]->lines, currLine->line)) {
@@ -290,7 +291,7 @@ int worker(int w_id) {
             }
             free(doclines_returned);
             deleteStringList(&terms);
-            if (asprintf(&writebuf, "$") < 0) {
+            if (asprintf(&writebuf, "$") < 0) {     // notify worker that reulsts are over
                 perror("asprintf");
                 exit_code = EC_MEM;
                 break;
@@ -461,6 +462,7 @@ int worker(int w_id) {
         fprintf(stderr, "Worker%d with pid %d was killed.\n", w_id, pid);
     }
 
+    // Free everything:
     if (bufferptr != NULL) {
         free(bufferptr);
     }

@@ -31,7 +31,4 @@ int insert(Trie *root, char *word, int id, int line);
 
 PostingList *getPostingList(Trie *root, char *word);
 
-//int printTrieNode(TrieNode *node, char *prefix);
-//int printTrie(Trie *root);
-
 #endif

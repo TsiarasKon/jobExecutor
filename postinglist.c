@@ -88,18 +88,3 @@ int incrementPostingList(TrieNode *node, int id, int line) {
     }
     return EC_OK;
 }
-
-int getTermFrequency(PostingList *postingList, int id) {        // returns 0 if not found
-    if (postingList == NULL) {
-        return 0;
-    }
-    PostingListNode *current = postingList->first;
-    // If we surpass the id, then the postingList we're searching for doesn't exist:
-    while (current != NULL && current->id <= id) {
-        if (current->id == id) {
-            return current->tf;
-        }
-        current = current->next;
-    }
-    return 0;
-}
