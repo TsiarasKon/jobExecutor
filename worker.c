@@ -126,7 +126,7 @@ int worker(int w_id) {
                     return EC_UNKNOWN;
                 }
                 bufferptr = buffer;
-                strtok(buffer, "\n");
+                strtok(buffer, "\r\n");
                 line_len = (int) strlen(buffer);
                 docs[curr_doc][curr_line] = malloc((size_t) line_len + 1);
                 total_chars += line_len;
@@ -207,7 +207,7 @@ int worker(int w_id) {
             exit_code = EC_PIPE;
             break;
         }
-        strtok(readbuf, "\n");     // remove trailing newline character
+        strtok(readbuf, "\r\n");     // remove trailing newline character
         command = strtok(readbuf, " \t");
         if (!strcmp(command, cmds[0])) {          // search
             worker_timeout = 0;

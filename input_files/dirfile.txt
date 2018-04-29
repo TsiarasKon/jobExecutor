@@ -1,6 +1,6 @@
-/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/input_files/test
-/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/input_files/anothertest
-/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/input_files/small_from_ex1
-/home/ch0sen/Desktop/MyProjects/Syspro/jobExecutor/input_files/test2/hey
+./input_files/test
+./input_files/anothertest
+./input_files/small_from_ex1
+./input_files/test2/hey
 
 

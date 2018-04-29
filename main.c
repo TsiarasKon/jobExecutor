@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
         bufferptr = buffer;
-        strtok(buffer, "\n");
+        strtok(buffer, "\r\n");
         buffer = strtok(buffer, " \t");
         if (!(testdir = opendir(buffer))) {     // couldn't open dir
             fprintf(stderr, "Failed to open directory \"%s\"", buffer);
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
          bufferptr = buffer;
-        strtok(buffer, "\n");
+        strtok(buffer, "\r\n");
         buffer = strtok(buffer, " \t");
         if (!(testdir = opendir(buffer))) {     // invalid directory
 			buffer = bufferptr;
@@ -312,7 +312,7 @@ int main(int argc, char *argv[]) {
         }
         strcpy(writebuf, buffer);
         bufferptr = buffer;
-        strtok(buffer, "\n");     // remove trailing newline character
+        strtok(buffer, "\r\n");     // remove trailing newline character
         command = strtok(buffer, " \t");
         if (!strcmp(command, cmds[0])) {          // search
             // Validating search query:
